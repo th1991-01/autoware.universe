@@ -21,6 +21,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "tier4_autoware_utils/geometry/path_with_lane_id_geometry.hpp"
+#include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include "autoware_auto_planning_msgs/msg/path.hpp"
 #include "autoware_auto_planning_msgs/msg/path_with_lane_id.hpp"
@@ -53,6 +54,13 @@ public:
   TrajectoryAnalyzer(rclcpp::Node * node, const std::string & sub_name)
   : node_(node), name_(sub_name)
   {
+    try {
+      vehicle_info_ = vehicle_info_util::VehicleInfoUtil(*node).getVehicleInfo();
+    } catch (...) {
+      RCLCPP_ERROR(node->get_logger(), "failed to get vehicle info. use default value.");
+      vehicle_info_.wheel_base_m = 4.0;
+    }
+
     const auto pub_name = sub_name + "/debug_info";
     pub_ = node->create_publisher<TrajectoryDebugInfo>(pub_name, 1);
     sub_ = node->create_subscription<T>(
@@ -76,6 +84,8 @@ public:
   SubscriberType sub_;
   Odometry::ConstSharedPtr ego_kinematics_;
 
+  vehicle_info_util::VehicleInfo vehicle_info_;
+
   template <typename P>
   void run(const P & points)
   {
@@ -88,6 +98,9 @@ public:
     data.stamp = node_->now();
     data.size = points.size();
     data.curvature = calcCurvature(points);
+    data.curvature_diff = calcCurvatureDiff(points);
+    data.steering = calcSteering(points, vehicle_info_);
+    data.steering_rate = calcSteeringRate(points, vehicle_info_);
     const auto arclength_offset = motion_utils::calcSignedArcLength(points, 0, ego_p);
     data.arclength = calcPathArcLengthArray(points, -arclength_offset);
     data.velocity = getVelocityArray(points);

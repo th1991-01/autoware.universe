@@ -19,11 +19,13 @@
 #include "rclcpp/rclcpp.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "tier4_autoware_utils/geometry/path_with_lane_id_geometry.hpp"
+#include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include "autoware_auto_planning_msgs/msg/path.hpp"
 #include "autoware_auto_planning_msgs/msg/path_with_lane_id.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 
+#include <algorithm>
 #include <vector>
 
 namespace planning_debug_tools
@@ -127,6 +129,72 @@ inline std::vector<double> calcCurvature(const T & points)
   }
   curvature_arr.push_back(0.0);
   return curvature_arr;
+}
+
+template <class T>
+inline std::vector<double> calcCurvatureDiff(const T & points)
+{
+  const auto curvature_arr = calcCurvature(points);
+
+  std::vector<double> curvature_diff_arr;
+  for (size_t i = 0; i < points.size() - 1; ++i) {
+    const auto & prev_point = points.at(i);
+    const auto & next_point = points.at(i + 1);
+    const auto delta_s = calcDistance2d(prev_point, next_point);
+
+    const auto dk = (curvature_arr.at(i + 1) - curvature_arr.at(i)) / delta_s;
+    curvature_diff_arr.push_back(dk);
+  }
+
+  if (!curvature_diff_arr.empty()) {
+    curvature_diff_arr.push_back(curvature_diff_arr.back());
+  }
+  return curvature_diff_arr;
+}
+
+template <class T>
+inline std::vector<double> calcSteering(
+  const T & points, const vehicle_info_util::VehicleInfo & vehicle_info)
+{
+  const auto curvature_to_steering = [](const auto k, const auto wheelbase) {
+    return std::atan(k * wheelbase);
+  };
+  const auto k_arr = calcCurvature(points);
+
+  std::vector<double> steering_arr;
+  for (const auto & k : k_arr) {
+    steering_arr.push_back(curvature_to_steering(k, vehicle_info.wheel_base_m));
+  }
+
+  return steering_arr;
+}
+
+template <class T>
+inline std::vector<double> calcSteeringRate(
+  const T & points, const vehicle_info_util::VehicleInfo & vehicle_info)
+{
+  const auto steering_arr = calcSteering(points, vehicle_info);
+
+  std::vector<double> steering_rate_arr;
+  for (size_t i = 0; i < points.size() - 1; ++i) {
+    const auto & prev_point = points.at(i);
+    const auto & next_point = points.at(i + 1);
+    const auto delta_s = calcDistance2d(prev_point, next_point);
+    const auto v = 0.5 * (getVelocity(prev_point) + getVelocity(next_point));
+    const auto dt = delta_s / std::max(v, 1.0e-5);
+
+    const auto prev_steer = steering_arr.at(i);
+    const auto next_steer = steering_arr.at(i + 1);
+
+    const auto steer_rate = (next_steer - prev_steer) / dt;
+    steering_rate_arr.push_back(steer_rate);
+  }
+
+  if (!steering_rate_arr.empty()) {
+    steering_rate_arr.push_back(steering_arr.back());
+  }
+
+  return steering_rate_arr;
 }
 
 }  // namespace planning_debug_tools

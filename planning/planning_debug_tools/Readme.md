@@ -104,6 +104,10 @@ function PlotCurvatureOverArclength(name, path, timestamp)
   PlotValue(name, path, timestamp,"curvature")
 end
 
+function PlotCurvatureDiffOverArclength(name, path, timestamp)
+  PlotValue(name, path, timestamp,"curvature_diff")
+end
+
 function PlotVelocityOverArclength(name, path, timestamp)
   PlotValue(name, path, timestamp,"velocity")
 end
@@ -114,6 +118,14 @@ end
 
 function PlotYawOverArclength(name, path, timestamp)
   PlotValue(name, path, timestamp,"yaw")
+end
+
+function PlotSteeringOverArclength(name, path, timestamp)
+  PlotValue(name, path, timestamp,"steering")
+end
+
+function PlotSteeringRateOverArclength(name, path, timestamp)
+  PlotValue(name, path, timestamp,"steering_rate")
 end
 
 function PlotCurrentVelocity(name, kinematics_name, timestamp)
