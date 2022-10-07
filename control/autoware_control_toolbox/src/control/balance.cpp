@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "control/balance.hpp"
+#include "autoware_control_toolbox/control/balance.hpp"
 
-#include "control/act_definitions.hpp"
-#include "utils_act/act_utils.hpp"
-#include "utils_act/act_utils_eigen.hpp"
+#include "autoware_control_toolbox/control/act_definitions.hpp"
+#include "autoware_control_toolbox/utils_act/act_utils.hpp"
+#include "autoware_control_toolbox/utils_act/act_utils_eigen.hpp"
 
 /**
  * @brief Reduces a matrix to a upper Hessenberg form. Source Lapack sgebal.f.

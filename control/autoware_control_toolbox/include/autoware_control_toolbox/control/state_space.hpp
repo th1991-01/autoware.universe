@@ -17,11 +17,11 @@
 #ifndef AUTOWARE_CONTROL_TOOLBOX_STATE_SPACE_HPP
 #define AUTOWARE_CONTROL_TOOLBOX_STATE_SPACE_HPP
 
-#include "act_definitions.hpp"
-#include "utils_act/act_utils.hpp"
-#include "utils_act/act_utils_eigen.hpp"
-#include "balance.hpp"
-#include "transfer_functions.hpp"
+#include "autoware_control_toolbox/control/act_definitions.hpp"
+#include "autoware_control_toolbox/utils_act/act_utils.hpp"
+#include "autoware_control_toolbox/utils_act/act_utils_eigen.hpp"
+#include "autoware_control_toolbox/control/balance.hpp"
+#include "autoware_control_toolbox/control/transfer_functions.hpp"
 
 #include <algorithm>
 #include <vector>

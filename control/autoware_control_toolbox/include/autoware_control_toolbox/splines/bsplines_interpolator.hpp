@@ -25,8 +25,8 @@
 #include <numeric>
 #include <utility>
 #include <vector>
-#include "utils_act/act_utils.hpp"
-#include "utils_act/act_utils_eigen.hpp"
+#include "autoware_control_toolbox/utils_act/act_utils.hpp"
+#include "autoware_control_toolbox/utils_act/act_utils_eigen.hpp"
 
 namespace ns_splines
 {

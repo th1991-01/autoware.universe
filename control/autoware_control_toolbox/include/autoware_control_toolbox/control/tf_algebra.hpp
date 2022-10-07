@@ -31,9 +31,9 @@
 #include <boost/math/tools/polynomial.hpp>
 
 // Library headers
-#include "control/act_definitions.hpp"
-#include "utils_act/act_utils.hpp"
-#include "utils_act/act_utils_eigen.hpp"
+#include "autoware_control_toolbox/control/act_definitions.hpp"
+#include "autoware_control_toolbox/utils_act/act_utils.hpp"
+#include "autoware_control_toolbox/utils_act/act_utils_eigen.hpp"
 
 namespace ns_control_toolbox
 {

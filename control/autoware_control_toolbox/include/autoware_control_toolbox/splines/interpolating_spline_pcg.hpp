@@ -15,8 +15,8 @@
 #ifndef AUTOWARE_CONTROL_TOOLBOX_INCLUDE_SPLINES_INTERPOLATING_SPLINE_PCG_HPP_
 #define AUTOWARE_CONTROL_TOOLBOX_INCLUDE_SPLINES_INTERPOLATING_SPLINE_PCG_HPP_
 
-#include "utils_act/act_utils.hpp"
-#include "utils_act/act_utils_eigen.hpp"
+#include "autoware_control_toolbox/utils_act/act_utils.hpp"
+#include "autoware_control_toolbox/utils_act/act_utils_eigen.hpp"
 
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Sparse>

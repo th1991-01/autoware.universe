@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_control_toolbox.hpp"
+#include "autoware_control_toolbox/autoware_control_toolbox.hpp"
 
 void print(std::vector<double> const & x)
 {
