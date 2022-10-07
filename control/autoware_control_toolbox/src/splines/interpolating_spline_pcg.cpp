@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "splines/interpolating_spline_pcg.hpp"
+#include "autoware_control_toolbox/splines/interpolating_spline_pcg.hpp"
 
 #include <algorithm>
 #include <functional>

@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "utils_act/writetopath.hpp"
-#include "utils_act/act_utils.hpp"
+#include "autoware_control_toolbox/utils_act/writetopath.hpp"
+#include "autoware_control_toolbox/utils_act/act_utils.hpp"
 #include <vector>
 #include <algorithm>
 #include <numeric>
 #include <random>
 #include <fmt/core.h>
-#include "utils_act/timekeep.hpp"
-#include "splines/bsplines_smoother.hpp"
+#include "autoware_control_toolbox/utils_act/timekeep.hpp"
+#include "autoware_control_toolbox/splines/bsplines_smoother.hpp"
 
 int main()
 {

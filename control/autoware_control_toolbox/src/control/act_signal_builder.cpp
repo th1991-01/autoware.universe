@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "control/act_signal_builder.hpp"
+#include "autoware_control_toolbox/control/act_signal_builder.hpp"
 
 Eigen::VectorXd ns_control_toolbox::make_time_signal(const double & dt, const double & final_time)
 {

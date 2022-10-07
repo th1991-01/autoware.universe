@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "control/transfer_functions.hpp"
+#include "autoware_control_toolbox/control/transfer_functions.hpp"
 
 #include <algorithm>
 #include <string>

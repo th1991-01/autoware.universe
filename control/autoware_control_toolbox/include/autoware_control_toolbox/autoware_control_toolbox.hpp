@@ -27,16 +27,16 @@
 #include <vector>
 
 // Library headers
-#include "control/act_definitions.hpp"
-#include "control/act_signal_builder.hpp"
-#include "utils_act/act_utils_eigen.hpp"
-#include "control/balance.hpp"
-#include "control/state_space.hpp"
-#include "control/tf_algebra.hpp"
-#include "control/transfer_functions.hpp"
-#include "splines/bsplines_smoother.hpp"
-#include "splines/bspline_interpolator_templated.hpp"
-#include "splines/bsplines_interpolator.hpp"
-#include "splines/interpolating_spline_pcg.hpp"
+#include "autoware_control_toolbox/control/act_definitions.hpp"
+#include "autoware_control_toolbox/control/act_signal_builder.hpp"
+#include "autoware_control_toolbox/utils_act/act_utils_eigen.hpp"
+#include "autoware_control_toolbox/control/balance.hpp"
+#include "autoware_control_toolbox/control/state_space.hpp"
+#include "autoware_control_toolbox/control/tf_algebra.hpp"
+#include "autoware_control_toolbox/control/transfer_functions.hpp"
+#include "autoware_control_toolbox/splines/bsplines_smoother.hpp"
+#include "autoware_control_toolbox/splines/bspline_interpolator_templated.hpp"
+#include "autoware_control_toolbox/splines/bsplines_interpolator.hpp"
+#include "autoware_control_toolbox/splines/interpolating_spline_pcg.hpp"
 
 #endif  // AUTOWARE_CONTROL_TOOLBOX_HPP_

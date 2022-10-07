@@ -16,6 +16,6 @@
 #define AUTOWARE_CONTROL_TOOLBOX_TEST_ACT_TEST_SUITE_HPP_
 
 #include "gtest/gtest.h"
-#include "autoware_control_toolbox.hpp"
+#include "autoware_control_toolbox/autoware_control_toolbox.hpp"
 
 #endif // AUTOWARE_CONTROL_TOOLBOX_TEST_ACT_TEST_SUITE_HPP_

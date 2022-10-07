@@ -15,8 +15,8 @@
 #ifndef AUTOWARE_CONTROL_TOOLBOX_BALANCE_HPP
 #define AUTOWARE_CONTROL_TOOLBOX_BALANCE_HPP
 
-#include "../utils_act/act_utils.hpp"
-#include "../utils_act/act_utils_eigen.hpp"
+#include "autoware_control_toolbox/utils_act/act_utils.hpp"
+#include "autoware_control_toolbox/utils_act/act_utils_eigen.hpp"
 
 namespace ns_control_toolbox
 {
