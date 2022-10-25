@@ -332,9 +332,8 @@ void TrajectorySamplerNode::pathCallback(
     auto final_trajectory = prependTrajectory(selected_trajectory, path_spline, *current_state);
     if (
       final_trajectory.longitudinal_velocities.size() > 1 &&
-      final_trajectory.longitudinal_velocities.front() < 0.1) {
-      final_trajectory.longitudinal_velocities.front() =
-        final_trajectory.longitudinal_velocities[1];
+      final_trajectory.longitudinal_velocities.front() < 0.25 && final_trajectory.longitudinal_velocities[1] >= 0.0) {
+        final_trajectory.longitudinal_velocities.front() = 0.25;
       std::cout << "[prependTrajectory] updated 1st 0 velocity to "
                 << final_trajectory.longitudinal_velocities.front() << "\n";
     }
