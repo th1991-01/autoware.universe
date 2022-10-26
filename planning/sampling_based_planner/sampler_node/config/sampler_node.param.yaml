@@ -14,9 +14,9 @@
       hard:
         max_curvature: 0.2  # [1/m]
         min_curvature: -0.2  # [1/m]
-        max_acceleration: 2.0  # [m/s²]
-        min_acceleration: -2.0  # [m/s²]
-        max_velocity: 3.0  # [m/s]
+        max_acceleration: 1.0  # [m/s²]
+        min_acceleration: -1.0  # [m/s²]
+        max_velocity: 1.0  # [m/s]
         min_velocity: -0.5  # [m/s]
         collision_distance_buffer: 1.0 # [m]
       soft:
