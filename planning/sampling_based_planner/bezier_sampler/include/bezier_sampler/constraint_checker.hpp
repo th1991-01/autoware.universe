@@ -21,13 +21,16 @@
 #include <bezier_sampler/bezier.hpp>
 
 #include <nav_msgs/msg/occupancy_grid.hpp>
+#ifdef ROS_DISTRO_GALACTIC
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#else
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#endif
 
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/geometries.hpp>
 #include <boost/geometry/geometries/point_xy.hpp>
 #include <boost/geometry/geometries/register/point.hpp>
-
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include <vector>
 
