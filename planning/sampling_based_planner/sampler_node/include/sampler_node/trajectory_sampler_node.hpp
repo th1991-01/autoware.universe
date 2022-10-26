@@ -59,7 +59,7 @@ namespace sampler_node
 class TrajectorySamplerNode : public rclcpp::Node
 {
 private:
-  gui::GUI gui_;
+  //gui::GUI gui_;
   // Parameters
   double fallback_timeout_{};
   Parameters params_;

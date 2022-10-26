@@ -42,7 +42,7 @@ std::vector<sampler_common::Trajectory> generateCandidateTrajectories(
   const sampler_common::Configuration & initial_configuration,
   const sampler_common::Trajectory & previous_trajectory,
   const sampler_common::transform::Spline2D & path_spline,
-  const autoware_auto_planning_msgs::msg::Path & path_msg, gui::GUI & gui,
+  const autoware_auto_planning_msgs::msg::Path & path_msg,
   const Parameters & params);
 
 std::vector<frenet_planner::Trajectory> generateFrenetTrajectories(

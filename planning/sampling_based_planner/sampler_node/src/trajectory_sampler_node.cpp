@@ -190,8 +190,8 @@ TrajectorySamplerNode::TrajectorySamplerNode(const rclcpp::NodeOptions & node_op
   set_param_res_ =
     add_on_set_parameters_callback([this](const auto & params) { return onParameter(params); });
   // This is necessary to interact with the GUI even when we are not generating trajectories
-  gui_process_timer_ =
-    create_wall_timer(std::chrono::milliseconds(100), [this]() { gui_.update(); });
+  // gui_process_timer_ =
+  //   create_wall_timer(std::chrono::milliseconds(100), [this]() { gui_.update(); });
 }
 
 rcl_interfaces::msg::SetParametersResult TrajectorySamplerNode::onParameter(
@@ -324,7 +324,7 @@ void TrajectorySamplerNode::pathCallback(
     msg->drivable_area);
 
   auto trajectories = generateCandidateTrajectories(
-    planning_configuration, prev_traj_, path_spline, *msg, gui_, params_);
+    planning_configuration, prev_traj_, path_spline, *msg, params_);
   for (auto & trajectory : trajectories) {
     debug.violations +=
       sampler_common::constraints::checkHardConstraints(trajectory, params_.constraints);
@@ -366,15 +366,17 @@ void TrajectorySamplerNode::pathCallback(
   }
   const auto calc_end = std::chrono::steady_clock::now();
   const auto gui_begin = std::chrono::steady_clock::now();
+  /*
   gui_.setInputs(*msg, path_spline, *current_state);
   gui_.setOutputs(trajectories, selected_trajectory_idx, prev_traj_);
   gui_.update();
+  */
   const auto gui_end = std::chrono::steady_clock::now();
   const auto calc_time_ms =
     std::chrono::duration_cast<std::chrono::milliseconds>(calc_end - calc_begin).count();
   const auto gui_time_ms =
     std::chrono::duration_cast<std::chrono::milliseconds>(gui_end - gui_begin).count();
-  gui_.setPerformances(trajectories.size(), calc_time_ms, gui_time_ms);
+  // gui_.setPerformances(trajectories.size(), calc_time_ms, gui_time_ms);
 }
 
 std::optional<size_t> TrajectorySamplerNode::selectBestTrajectory(

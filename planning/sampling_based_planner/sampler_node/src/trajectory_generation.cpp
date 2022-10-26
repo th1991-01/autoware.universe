@@ -30,7 +30,7 @@ std::vector<sampler_common::Trajectory> generateCandidateTrajectories(
   const sampler_common::Configuration & initial_configuration,
   const sampler_common::Trajectory & previous_trajectory,
   const sampler_common::transform::Spline2D & path_spline,
-  const autoware_auto_planning_msgs::msg::Path & path_msg, gui::GUI & gui,
+  const autoware_auto_planning_msgs::msg::Path & path_msg,
   const Parameters & params)
 {
   const auto reuse_length_step =
@@ -47,7 +47,7 @@ std::vector<sampler_common::Trajectory> generateCandidateTrajectories(
   if (params.sampling.enable_frenet) {
     auto frenet_trajs = generateFrenetTrajectories(
       initial_configuration, base_trajectory, path_msg, path_spline, params);
-    gui.setFrenetTrajectories(frenet_trajs);
+    //gui.setFrenetTrajectories(frenet_trajs);
     move_to_trajectories(frenet_trajs);
   }
   if (params.sampling.enable_bezier) {
@@ -76,7 +76,7 @@ std::vector<sampler_common::Trajectory> generateCandidateTrajectories(
       if (params.sampling.enable_frenet) {
         const auto trajectories_from_prev_trajectory = generateFrenetTrajectories(
           end_of_reused_trajectory, base_trajectory, path_msg, path_spline, params);
-        gui.setFrenetTrajectories(trajectories_from_prev_trajectory, base_trajectory);
+        //gui.setFrenetTrajectories(trajectories_from_prev_trajectory, base_trajectory);
         for (const auto & trajectory : trajectories_from_prev_trajectory) {
           trajectories.push_back(base_trajectory.extend(trajectory));
           trajectories.back().cost *= cost_mult;
