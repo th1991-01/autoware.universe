@@ -44,6 +44,7 @@
 
 #include <boost/circular_buffer.hpp>
 #include <boost/circular_buffer/base.hpp>
+#include <boost/geometry/algorithms/distance.hpp>
 
 #include <lanelet2_core/Forward.h>
 #include <tf2_ros/buffer.h>
