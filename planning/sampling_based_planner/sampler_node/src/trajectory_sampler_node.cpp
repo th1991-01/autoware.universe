@@ -86,13 +86,25 @@ TrajectorySamplerNode::TrajectorySamplerNode(const rclcpp::NodeOptions & node_op
     std::bind(&TrajectorySamplerNode::fallbackCallback, this, std::placeholders::_1));
   vel_sub_ = create_subscription<nav_msgs::msg::Odometry>(
     "~/input/velocity", rclcpp::QoS{1}, [&](nav_msgs::msg::Odometry::ConstSharedPtr msg) {
-      velocities_.push_back(msg->twist.twist.linear.x);
+      const auto prev_vel = vel_filter_.getValue();
+      const auto curr_vel = vel_filter_.filter(msg->twist.twist.linear.x);
+      if(prev_kinematics_ && prev_vel) {
+        const auto dv = curr_vel - *prev_vel;
+        accel_filter_.filter(dv / dt);
+        const auto dt = std::max(
+        (rclcpp::Time(msg->header.stamp) -
+         rclcpp::Time(prev_kinematics_->header.stamp))
+          .seconds(), 1e-03);
+      }
+      prev_kinematics_ = msg;
     });
+  /*
   acc_sub_ = create_subscription<geometry_msgs::msg::AccelWithCovarianceStamped>(
     "~/input/acceleration", rclcpp::QoS{1},
     [&](geometry_msgs::msg::AccelWithCovarianceStamped::ConstSharedPtr msg) {
       accelerations_.push_back(msg->accel.accel.linear.x);
     });
+    */
 
   in_objects_ptr_ = std::make_unique<autoware_auto_perception_msgs::msg::PredictedObjects>();
 
@@ -440,11 +452,10 @@ std::optional<sampler_common::Configuration> TrajectorySamplerNode::getCurrentEg
     points_.push_back(config.pose);
     yaws_.push_back(config.heading);
   }
-  // TODO(Maxime CLEMENT): use a proper filter from the signal_processing lib
-  config.velocity =
-    std::accumulate(velocities_.begin(), velocities_.end(), 0.0) / velocities_.size();
-  config.acceleration =
-    std::accumulate(accelerations_.begin(), accelerations_.end(), 0.0) / accelerations_.size();
+  if(vel_filter_.getValue())
+    config.velocity = *vel_filter_.getValue();
+  if(acc_filter_.getValue())
+    config.acceleration = *acc_filter_.getValue();
   return config;
 }
 

@@ -23,6 +23,7 @@
 #include "sampler_node/parameters.hpp"
 #include "sampler_node/trajectory_generation.hpp"
 #include "vehicle_info_util/vehicle_info.hpp"
+#include "signal_processing/lowpass_filter_1d.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/timer.hpp>
@@ -81,10 +82,11 @@ private:
   lanelet::LaneletMapPtr lanelet_map_ptr_;
   lanelet::Ids drivable_ids_;
   lanelet::Ids prefered_ids_;
-  boost::circular_buffer<double> velocities_{5};
-  boost::circular_buffer<double> accelerations_{5};
   boost::circular_buffer<sampler_common::Point> points_{50};
   boost::circular_buffer<double> yaws_{50};
+  LowpassFilter1d vel_filter_{0.2};
+  LowpassFilter1d accel_filter_{0.2};
+  nav_msgs::msg::Odometry::ConstSharedPtr prev_kinematics_;
 
   // ROS pub / sub
   rclcpp::Publisher<autoware_auto_planning_msgs::msg::Trajectory>::SharedPtr trajectory_pub_;
