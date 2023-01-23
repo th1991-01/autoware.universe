@@ -166,6 +166,62 @@ bool RouteHandler::isRouteLooped(const RouteSections & route_sections)
   return false;
 }
 
+std::pair<std::vector<RouteSections>, std::vector<RouteSections>>
+RouteHandler::getPartialRoutesWithoutDuplicatedLaneId(const RouteSections & original_route)
+{
+
+  std::set<lanelet::Id> lane_primitives;
+  RouteSections partial_route, switching_route;
+  std::vector<RouteSections> partial_routes, switching_routes;
+
+  bool duplication_found = false;
+  lanelet::Id duplicated_id;
+
+  
+
+
+
+  // まず重複点がある手前までのルート:partial_routeを作る。
+  size_t index = 0;
+  for (; index < original_route.size(); ++index) {
+    const auto original_route_sections = original_route.at(index);
+    for (const auto & primitive : original_route_sections.primitives) {
+      if (lane_primitives.find(primitive.id) != lane_primitives.end()) {
+        duplication_found = true;
+        duplicated_id = primitive.id;
+        break;
+      }
+      lane_primitives.emplace(primitive.id);
+    }
+    if (duplication_found) {
+      break;
+    }
+    partial_route.push_back(original_route_sections);
+  }
+
+  partial_routes.push_back(partial_route);
+
+  if (!duplication_found) {
+    return {partial_routes, switching_routes};
+  }
+
+  // 今回のpartial_routeとduplicated_idから、switching_routeを埋める
+  bool is_in_switching_route = false;
+  for (const auto & route_sections : partial_route) {
+    if (is_in_switching_route) {
+      switching_route.push_back(route_sections);
+      continue;
+    }
+    for (const auto & primitive : route_sections.primitives) {
+      if (primitive.id != duplicated_id) {
+        is_in_switching_route = true;
+        break;;  // 次からswitchingに入る
+      }
+    }
+
+
+}
+
 void RouteHandler::setRoute(const LaneletRoute & route_msg)
 {
   if (!isRouteLooped(route_msg.segments)) {

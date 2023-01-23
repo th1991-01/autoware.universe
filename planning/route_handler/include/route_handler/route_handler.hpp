@@ -88,6 +88,9 @@ public:
   std::vector<LaneletSegment> createMapSegments(const lanelet::ConstLanelets & path_lanelets) const;
   static bool isRouteLooped(const RouteSections & route_sections);
 
+  std::pair<std::vector<RouteSections>, std::vector<RouteSections>>
+  getPartialRoutesWithoutDuplicatedLaneId(const RouteSections & original_route);
+
   // for goal
   bool isInGoalRouteSection(const lanelet::ConstLanelet & lanelet) const;
   Pose getGoalPose() const;
