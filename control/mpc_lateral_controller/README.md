@@ -124,6 +124,27 @@ AutonomouStuff Lexus RX 450h for under 40 km/h driving.
 | weight_terminal_heading_error           | double | terminal cost weight for heading error                                                          | 0.1               |
 | zero_ff_steer_deg                       | double | threshold of feedforward angle [deg]. feedforward angle smaller than this value is set to zero. | 2.0               |
 
+#### Steer offset removal
+
+| Name          | Type   | Description                                                              | Default value |
+| :------------ | :----- | :----------------------------------------------------------------------- | :------------ |
+| enable_auto_steering_offset_removal | bool | auto steering bias estimation and compensation is applied. | True        |
+| update_vel_threshold  | double | steering offset is NOT estimated when the vehicle velicity is slower than this value [m/s]                              | 5.56 (=20 km/h)        |
+| update_steer_threshold       | double | steering offset is NOT estimated when the vehicle steering is larger than this value [rad/s]                                     | 0.035           |
+| average_num       | double | average filter for the estimated value. The larger the size, the more stable, but the slower the convergence speed. [-]                                    | 600           |
+| steering_offset_limit       | double | mass applied to rear left tire [rad/s]                                      | 600           |
+
+
+
+
+
+
+
+
+
+
+
+
 #### Vehicle
 
 | Name          | Type   | Description                                                              | Default value |
