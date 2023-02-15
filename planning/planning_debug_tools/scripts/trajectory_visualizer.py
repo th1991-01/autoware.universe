@@ -88,9 +88,7 @@ class TrajectoryVisualizer(Node):
         self.update_traj_ob_avoid = False
         self.update_traj_ob_stop = False
 
-        self.self_pose = Pose()
-        self.self_pose_received = False
-        self.localization_vx = 0.0
+        self.self_odom = None
         self.vehicle_vx = 0.0
         self.velocity_limit = None
 
@@ -108,55 +106,41 @@ class TrajectoryVisualizer(Node):
 
         self.plotted = [False] * 9
         self.sub_localization_kinematics = self.create_subscription(
-            Odometry, "/localization/kinematic_state", self.CallbackLocalizationTwist, 1
+            Odometry, "/localization/kinematic_state", self.CallbackLocalization, 1
         )
         self.sub_vehicle_twist = self.create_subscription(
             VelocityReport, "/vehicle/status/velocity_status", self.CallbackVehicleTwist, 1
         )
-
         self.sub_external_velocity_limit = self.create_subscription(
             VelocityLimit, "/planning/scenario_planning/max_velocity", self.CallbackVelocityLimit, 1
         )
 
+        lane_driving_ns = "/planning/scenario_planning/lane_driving"
+        smoother_debug_ns = "/planning/scenario_planning/motion_velocity_smoother/debug/"
+        motion_ns = "/planning/scenario_planning/lane_driving/motion_planning"
+
         # BUFFER_SIZE = 65536*100
-        optimizer_debug = "/planning/scenario_planning/motion_velocity_smoother/debug/"
-        self.sub1 = message_filters.Subscriber(
-            self, Trajectory, optimizer_debug + "trajectory_external_velocity_limited"
-        )
-        self.sub2 = message_filters.Subscriber(
-            self, Trajectory, optimizer_debug + "trajectory_lateral_acc_filtered"
-        )
-        self.sub3 = message_filters.Subscriber(self, Trajectory, optimizer_debug + "trajectory_raw")
-        self.sub4 = message_filters.Subscriber(
-            self, Trajectory, optimizer_debug + "trajectory_time_resampled"
-        )
-        self.sub41 = message_filters.Subscriber(
-            self, Trajectory, optimizer_debug + "trajectory_steering_rate_limited"
-        )
-        self.sub5 = message_filters.Subscriber(
-            self, Trajectory, "/planning/scenario_planning/trajectory"
-        )
+        def add_trajectory(name): return message_filters.Subscriber(self, Trajectory, name)
+        def add_path_wlid(name): return message_filters.Subscriber(self, PathWithLaneId, name)
+        def add_path(name): return message_filters.Subscriber(self, Path, name)
 
-        lane_driving = "/planning/scenario_planning/lane_driving"
-        self.sub6 = message_filters.Subscriber(
-            self, PathWithLaneId, lane_driving + "/behavior_planning/path_with_lane_id"
-        )
-        self.sub7 = message_filters.Subscriber(self, Path, lane_driving + "/behavior_planning/path")
-        self.sub8 = message_filters.Subscriber(
-            self,
-            Trajectory,
-            lane_driving + "/motion_planning/obstacle_avoidance_planner/trajectory",
-        )
-        self.sub9 = message_filters.Subscriber(self, Trajectory, lane_driving + "/trajectory")
+        self.sub_smd = []
+        self.sub_smd.append(add_trajectory(smoother_debug_ns + "trajectory_external_velocity_limited"))
+        self.sub_smd.append(add_trajectory(smoother_debug_ns + "trajectory_lateral_acc_filtered"))
+        self.sub_smd.append(add_trajectory(smoother_debug_ns + "trajectory_raw"))
+        self.sub_smd.append(add_trajectory(smoother_debug_ns + "trajectory_time_resampled"))
+        self.sub_smd.append(add_trajectory(smoother_debug_ns + "trajectory_steering_rate_limited"))
+        self.ts_smoother_debug = message_filters.ApproximateTimeSynchronizer(self.sub_smd, 30, 0.5)
+        self.ts_smoother_debug.registerCallback(self.CallbackMotionVelOptTraj)
 
-        self.ts1 = message_filters.ApproximateTimeSynchronizer(
-            [self.sub1, self.sub2, self.sub3, self.sub4, self.sub41], 30, 0.5
-        )
-        self.ts1.registerCallback(self.CallbackMotionVelOptTraj)
 
-        self.ts2 = message_filters.ApproximateTimeSynchronizer(
-            [self.sub5, self.sub6, self.sub7, self.sub8, self.sub9], 30, 1, 0
-        )
+        self.sub_ld = []
+        self.sub_ld.append(add_trajectory("/planning/scenario_planning/trajectory"))
+        self.sub_ld.append(add_path_wlid(lane_driving_ns + "/behavior_planning/path_with_lane_id"))
+        self.sub_ld.append(add_path(lane_driving_ns + "/behavior_planning/path"))
+        self.sub_ld.append(add_trajectory(motion_ns + "/obstacle_avoidance_planner/trajectory"))
+        self.sub_ld.append(add_trajectory(lane_driving_ns + "/trajectory"))
+        self.ts2 = message_filters.ApproximateTimeSynchronizer(self.sub_ld, 30, 1, 0)
         self.ts2.registerCallback(self.CallBackLaneDrivingTraj)
 
         # main process
@@ -173,14 +157,12 @@ class TrajectoryVisualizer(Node):
 
         return
 
-    def CallbackLocalizationTwist(self, cmd):
-        logging.info("received ego_odometry")
-        self.localization_vx = cmd.twist.twist.linear.x
-        self.self_pose = cmd.pose.pose
-        self.self_pose_received = True
-
     def CallbackVehicleTwist(self, cmd):
         self.vehicle_vx = cmd.longitudinal_velocity
+
+    def CallbackLocalization(self, cmd):
+        logging.info("received ego_odometry")
+        self.self_odom = cmd
 
     def CallbackVelocityLimit(self, cmd):
         self.velocity_limit = cmd.max_velocity
@@ -294,7 +276,7 @@ class TrajectoryVisualizer(Node):
     def plotTrajectoryVelocity(self, data):
         logging.info("-- on plotTrajectoryVelocity --")
         # self.updatePose(PATH_ORIGIN_FRAME, SELF_POSE_FRAME)
-        if self.self_pose_received is False:
+        if self.self_odom is None:
             logging.info("plot start but self pose is not received")
             return (
                 self.im1,
@@ -387,7 +369,7 @@ class TrajectoryVisualizer(Node):
             self.im9.set_data(x, y)
             self.update_traj_final = False
 
-            self.im10.set_data(0, self.localization_vx)
+            self.im10.set_data(0, self.self_odom.twist.twist.linear.x)
             self.im11.set_data(0, self.vehicle_vx)
 
             if self.velocity_limit is not None:
@@ -653,7 +635,7 @@ class TrajectoryVisualizer(Node):
         closest = -1
         min_dist_squared = 1.0e10
         for i in range(0, len(path.points)):
-            dist_sq = self.calcSquaredDist2d(self.self_pose, path.points[i].pose)
+            dist_sq = self.calcSquaredDist2d(self.self_odom.pose.pose, path.points[i].pose)
             if dist_sq < min_dist_squared:
                 min_dist_squared = dist_sq
                 closest = i
@@ -663,7 +645,7 @@ class TrajectoryVisualizer(Node):
         closest = -1
         min_dist_squared = 1.0e10
         for i in range(0, len(path.points)):
-            dist_sq = self.calcSquaredDist2d(self.self_pose, path.points[i].point.pose)
+            dist_sq = self.calcSquaredDist2d(self.self_odom.pose.pose, path.points[i].point.pose)
             if dist_sq < min_dist_squared:
                 min_dist_squared = dist_sq
                 closest = i
@@ -673,7 +655,7 @@ class TrajectoryVisualizer(Node):
         closest = -1
         min_dist_squared = 1.0e10
         for i in range(0, len(path.points)):
-            dist_sq = self.calcSquaredDist2d(self.self_pose, path.points[i].pose)
+            dist_sq = self.calcSquaredDist2d(self.self_odom.pose.pose, path.points[i].pose)
             if dist_sq < min_dist_squared:
                 min_dist_squared = dist_sq
                 closest = i
