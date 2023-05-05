@@ -344,6 +344,8 @@ private:
   }
 
 public:
+  rclcpp::Node * node_;
+
   //!< @brief reference trajectory to be followed
   MPCTrajectory m_ref_traj;
   //!< @brief MPC design parameter

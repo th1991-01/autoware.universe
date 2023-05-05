@@ -16,6 +16,11 @@
 
 #include "motion_utils/motion_utils.hpp"
 
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Transform.h>
+
 #include <algorithm>
 #include <deque>
 #include <limits>
@@ -97,6 +102,68 @@ bool MPC::calculateMPC(
   /* calculate predicted trajectory */
   predicted_traj =
     calcualtePredictedTrajectory(mpc_matrix, x0, Uex, mpc_resampled_ref_traj, prediction_dt);
+
+  {
+    const auto convertOrigin = [](
+                                 const MPCTrajectory & traj, const double x_orig,
+                                 const double y_orig, const double yaw_orig,
+                                 bool invert_origin = false) {
+      tf2::Quaternion origin_q;
+      origin_q.setRPY(0, 0, yaw_orig);
+      tf2::Transform origin(origin_q, tf2::Vector3(x_orig, y_orig, 0.0));
+
+      MPCTrajectory converted = traj;
+      for (size_t i = 0; i < traj.size(); ++i) {
+        tf2::Quaternion target_q;
+        target_q.setRPY(0, 0, traj.yaw.at(i));
+        tf2::Transform target(target_q, tf2::Vector3(traj.x.at(i), traj.y.at(i), 0.0));
+
+        tf2::Transform relative = invert_origin ? origin * target : origin.inverse() * target;
+        converted.x.at(i) = relative.getOrigin().getX();
+        converted.y.at(i) = relative.getOrigin().getY();
+        converted.yaw.at(i) = tf2::getYaw(relative.getRotation());
+      }
+      return converted;
+    };
+
+    // Relativize the target path to p0 (path.points.at(0)) and separate it into longitudinal and
+    // lateral components.
+    const auto x_orig = mpc_resampled_ref_traj.x.at(0);
+    const auto y_orig = mpc_resampled_ref_traj.y.at(0);
+    const auto yaw_orig = mpc_resampled_ref_traj.yaw.at(0);
+    const auto mpc_resampled_ref_traj_in_relative =
+      convertOrigin(mpc_resampled_ref_traj, x_orig, y_orig, yaw_orig);
+
+    // Compute the lateral error with respect to p0 with zero error at p0
+    const auto x0_zero = Eigen::MatrixXd::Zero(x0.rows(), x0.cols());
+    const auto Uex_zero = Eigen::MatrixXd::Zero(Uex.rows(), Uex.cols());
+    const Eigen::VectorXd Xex =
+      mpc_matrix.Aex * x0_zero + mpc_matrix.Bex * Uex_zero + mpc_matrix.Wex;
+
+    // Combine the lateral error with respect to p0 and the longitudinal component of the target
+    // path with respect to p0.
+    const size_t N = m_param.prediction_horizon;
+    const int DIM_X = m_vehicle_model_ptr->getDimX();
+    auto ref_path_model_in_relative = mpc_resampled_ref_traj_in_relative;
+    for (size_t i = 0; i < N; ++i) {
+      ref_path_model_in_relative.y.at(i) =
+        -Xex(i * DIM_X);  // apply negative since this is an error
+      ref_path_model_in_relative.yaw.at(i) =
+        -Xex(i * DIM_X + 1);  // apply negative since this is an error
+    }
+
+    // Reset the reference to the origin from p0.
+    const auto ref_path_model_in_world =
+      convertOrigin(ref_path_model_in_relative, x_orig, y_orig, yaw_orig, true);
+    auto ref_path_model_in_world_msg =
+      MPCUtils::convertToAutowareTrajectory(ref_path_model_in_world);
+    ref_path_model_in_world_msg.header.frame_id = "map";
+    ref_path_model_in_world_msg.header.stamp = node_->now();
+
+    // publish msg
+    static auto pub = node_->create_publisher<Trajectory>("mpc_trajectory_model", 1);
+    pub->publish(ref_path_model_in_world_msg);
+  }
 
   /* prepare diagnostic message */
   const double nearest_k = reference_trajectory.k[static_cast<size_t>(mpc_data.nearest_idx)];

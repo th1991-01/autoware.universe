@@ -202,6 +202,7 @@ trajectory_follower::LateralOutput MpcLateralController::run(
     m_is_ctrl_cmd_prev_initialized = true;
   }
 
+  m_mpc.node_ = node_;
   const bool is_mpc_solved = m_mpc.calculateMPC(
     m_current_steering, m_current_kinematic_state.twist.twist.linear.x,
     m_current_kinematic_state.pose.pose, ctrl_cmd, predicted_traj, debug_values);
