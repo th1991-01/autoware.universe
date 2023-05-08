@@ -29,10 +29,7 @@ PauseInterface::PauseInterface(rclcpp::Node * node) : node_(node)
   publish();
 }
 
-bool PauseInterface::is_paused()
-{
-  return is_paused_;
-}
+bool PauseInterface::is_paused() { return is_paused_; }
 
 void PauseInterface::publish()
 {
