@@ -2,6 +2,20 @@
   <arg name="input_route_topic_name" default="/planning/mission_planning/route"/>
   <arg name="map_topic_name" default="/map/vector_map"/>
 
+  <arg name="common_param_path"/>
+  <arg name="nearest_search_param_path"/>
+
+  <arg name="side_shift_param_path"/>
+  <arg name="avoidance_param_path"/>
+  <arg name="avoidance_by_lc_param_path"/>
+  <arg name="dynamic_avoidance_param_path"/>
+  <arg name="lane_change_param_path"/>
+  <arg name="goal_planner_param_path"/>
+  <arg name="pull_out_param_path"/>
+  <arg name="drivable_area_expansion_param_path"/>
+  <arg name="behavior_path_planner_param_path"/>
+  <arg name="scene_module_manager_param_path"/>
+
   <!-- vehicle info -->
   <arg name="vehicle_info_param_file" default="$(find-pkg-share vehicle_info_util)/config/vehicle_info.param.yaml"/>
 
@@ -11,11 +25,28 @@
     <remap from="~/input/perception" to="/perception/object_recognition/objects"/>
     <remap from="~/input/odometry" to="/localization/kinematic_state"/>
     <remap from="~/input/accel" to="/localization/acceleration"/>
-    <remap from="~/output/path" to="path_with_lane_id"/>
     <remap from="~/input/scenario" to="/planning/scenario_planning/scenario"/>
+    <remap from="~/input/costmap" to="/planning/scenario_planning/parking/costmap_generator/occupancy_grid"/>
+    <remap from="~/output/path" to="path_with_lane_id"/>
+    <remap from="~/output/hazard_lights_cmd" to="/planning/hazard_lights_cmd"/>
+    <remap from="~/output/modified_goal" to="/planning/scenario_planning/modified_goal"/>
+    <remap from="~/output/turn_indicators_cmd" to="/planning/turn_indicators_cmd"/>
 
     <param from="$(find-pkg-share behavior_path_planner)/config/side_shift/side_shift.param.yaml"/>
     <param name="bt_tree_config_path" value="$(find-pkg-share behavior_path_planner)/config/behavior_path_planner_tree.xml"/>
     <param from="$(var vehicle_info_param_file)"/>
+    <param from="$(var common_param_path)"/>
+    <param from="$(var nearest_search_param_path)"/>
+
+    <param from="$(var side_shift_param_path)"/>
+    <param from="$(var avoidance_param_path)"/>
+    <param from="$(var avoidance_by_lc_param_path)"/>
+    <param from="$(var dynamic_avoidance_param_path)"/>
+    <param from="$(var lane_change_param_path)"/>
+    <param from="$(var goal_planner_param_path)"/>
+    <param from="$(var pull_out_param_path)"/>
+    <param from="$(var drivable_area_expansion_param_path)"/>
+    <param from="$(var behavior_path_planner_param_path)"/>
+    <param from="$(var scene_module_manager_param_path)"/>
   </node>
 </launch>
