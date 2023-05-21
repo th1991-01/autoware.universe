@@ -57,143 +57,147 @@
   <arg name="planning_validator_param_path"/>
 
   <group>
+    <!-- /planning -->
     <push-ros-namespace namespace="planning"/>
+
     <!-- mission planning module -->
     <group>
       <push-ros-namespace namespace="mission_planning"/>
       <include file="$(find-pkg-share tier4_planning_launch)/launch/mission_planning/mission_planning.launch.xml"/>
     </group>
 
-
-    <!-- scenario selector -->
     <group>
-      <include file="$(find-pkg-share scenario_selector)/launch/scenario_selector.launch.xml">
-        <arg name="input_lane_driving_trajectory" value="/planning/scenario_planning/lane_driving/trajectory"/>
-        <arg name="input_parking_trajectory" value="/planning/scenario_planning/parking/trajectory"/>
-        <arg name="input_lanelet_map" value="/map/vector_map"/>
-        <arg name="input_route" value="/planning/mission_planning/route"/>
-        <arg name="input_odometry" value="/localization/kinematic_state"/>
-        <arg name="output_scenario" value="/planning/scenario_planning/scenario"/>
-        <arg name="output_trajectory" value="/planning/scenario_planning/scenario_selector/trajectory"/>
-        <arg name="is_parking_completed" value="/planning/scenario_planning/parking/is_completed"/>
-      </include>
-    </group>
+      <!-- /planning/scenario_planning/lane_driving -->
+      <push-ros-namespace namespace="scenario_planning"/>
 
-    <group>
-      <push-ros-namespace namespace="lane_driving"/>
-      <!-- behavior planning module -->
       <group>
-        <push-ros-namespace namespace="behavior_planning"/>
+        <!-- /planning/lane_driving -->
+        <push-ros-namespace namespace="lane_driving"/>
 
-        <node pkg="behavior_path_planner" exec="behavior_path_planner" name="behavior_path_planner" output="screen">
-          <remap from="~/input/route" to="/planning/mission_planning/route"/>
-          <remap from="~/input/vector_map" to="/map/vector_map"/>
-          <remap from="~/input/perception" to="/perception/object_recognition/objects"/>
-          <remap from="~/input/occupancy_grid_map" to="/perception/occupancy_grid_map/map"/>
-          <remap from="~/input/costmap" to="/planning/scenario_planning/parking/costmap_generator/occupancy_grid"/>
-          <remap from="~/input/odometry" to="/localization/kinematic_state"/>
-          <remap from="~/input/accel" to="/localization/acceleration"/>
-          <remap from="~/input/scenario" to="/planning/scenario_planning/scenario"/>
-          <remap from="~/output/path" to="path_with_lane_id"/>
-          <remap from="~/output/turn_indicators_cmd" to="/planning/turn_indicators_cmd"/>
-          <remap from="~/output/hazard_lights_cmd" to="/planning/hazard_lights_cmd"/>
-          <remap from="~/output/modified_goal" to="/planning/scenario_planning/modified_goal"/>
+        <!-- behavior planning module -->
+        <group>
+          <!-- /planning/lane_driving/behavior_planning -->
+          <push-ros-namespace namespace="behavior_planning"/>
 
-          <param name="bt_tree_config_path" value="$(find-pkg-share behavior_path_planner)/config/behavior_path_planner_tree.xml"/>
+          <node pkg="behavior_path_planner" exec="behavior_path_planner" name="behavior_path_planner" output="screen">
+            <remap from="~/input/route" to="/planning/mission_planning/route"/>
+            <remap from="~/input/vector_map" to="/map/vector_map"/>
+            <remap from="~/input/perception" to="/perception/object_recognition/objects"/>
+            <remap from="~/input/occupancy_grid_map" to="/perception/occupancy_grid_map/map"/>
+            <remap from="~/input/costmap" to="/planning/scenario_planning/parking/costmap_generator/occupancy_grid"/>
+            <remap from="~/input/odometry" to="/localization/kinematic_state"/>
+            <remap from="~/input/accel" to="/localization/acceleration"/>
+            <remap from="~/input/scenario" to="/planning/scenario_planning/scenario"/>
+            <remap from="~/output/path" to="path_with_lane_id"/>
+            <remap from="~/output/turn_indicators_cmd" to="/planning/turn_indicators_cmd"/>
+            <remap from="~/output/hazard_lights_cmd" to="/planning/hazard_lights_cmd"/>
+            <remap from="~/output/modified_goal" to="/planning/scenario_planning/modified_goal"/>
 
-          <param from="$(var vehicle_info_param_file)"/>
-          <param from="$(var nearest_search_param_path)"/>
-          <param from="$(var common_param_path)"/>
+            <param name="bt_tree_config_path" value="$(find-pkg-share behavior_path_planner)/config/behavior_path_planner_tree.xml"/>
 
-          <param from="$(var side_shift_param_path)"/>
-          <param from="$(var avoidance_param_path)"/>
-          <param from="$(var avoidance_by_lc_param_path)"/>
-          <param from="$(var dynamic_avoidance_param_path)"/>
-          <param from="$(var lane_change_param_path)"/>
-          <param from="$(var goal_planner_param_path)"/>
-          <param from="$(var pull_out_param_path)"/>
-          <param from="$(var drivable_area_expansion_param_path)"/>
-          <param from="$(var behavior_path_planner_param_path)"/>
-          <param from="$(var scene_module_manager_param_path)"/>
+            <param from="$(var vehicle_info_param_file)"/>
+            <param from="$(var nearest_search_param_path)"/>
+            <param from="$(var common_param_path)"/>
 
-          <param name="bt_tree_config_path" value="$(find-pkg-share behavior_path_planner)/config/behavior_path_planner_tree.xml"/>
-        </node>
+            <param from="$(var side_shift_param_path)"/>
+            <param from="$(var avoidance_param_path)"/>
+            <param from="$(var avoidance_by_lc_param_path)"/>
+            <param from="$(var dynamic_avoidance_param_path)"/>
+            <param from="$(var lane_change_param_path)"/>
+            <param from="$(var goal_planner_param_path)"/>
+            <param from="$(var pull_out_param_path)"/>
+            <param from="$(var drivable_area_expansion_param_path)"/>
+            <param from="$(var behavior_path_planner_param_path)"/>
+            <param from="$(var scene_module_manager_param_path)"/>
 
+            <param name="bt_tree_config_path" value="$(find-pkg-share behavior_path_planner)/config/behavior_path_planner_tree.xml"/>
+          </node>
 
+          <node pkg="behavior_velocity_planner" exec="behavior_velocity_planner_node" name="behavior_velocity_planner" output="screen">
+            <remap from="~/input/path_with_lane_id" to="path_with_lane_id"/>
+            <remap from="~/input/vector_map" to="/map/vector_map"/>
+            <remap from="~/input/vehicle_odometry" to="/localization/kinematic_state"/>
+            <remap from="~/input/accel" to="/localization/acceleration"/>
+            <remap from="~/input/dynamic_objects" to="/perception/object_recognition/objects"/>
+            <remap from="~/input/no_ground_pointcloud" to="/perception/obstacle_segmentation/pointcloud"/>
+            <remap from="~/input/traffic_signals" to="/perception/traffic_light_recognition/traffic_signals"/>
+            <remap from="~/input/virtual_traffic_light_states" to="/awapi/tmp/virtual_traffic_light_states"/>
+            <remap from="~/input/occupancy_grid" to="/perception/occupancy_grid_map/map"/>
+            <remap from="~/output/path" to="path"/>
+            <remap from="~/output/stop_reasons" to="/planning/scenario_planning/status/stop_reasons"/>
+            <remap from="~/output/infrastructure_commands" to="/planning/scenario_planning/status/infrastructure_commands"/>
+            <remap from="~/output/traffic_signal" to="debug/traffic_signal"/>
 
+            <param from="$(find-pkg-share behavior_velocity_planner)/config/blind_spot.param.yaml"/>
+            <param from="$(find-pkg-share behavior_velocity_planner)/config/crosswalk.param.yaml"/>
+            <param from="$(find-pkg-share behavior_velocity_planner)/config/detection_area.param.yaml"/>
+            <param from="$(find-pkg-share behavior_velocity_planner)/config/intersection.param.yaml"/>
+            <param from="$(find-pkg-share behavior_velocity_planner)/config/stop_line.param.yaml"/>
+            <param from="$(find-pkg-share behavior_velocity_planner)/config/traffic_light.param.yaml"/>
+            <param from="$(find-pkg-share behavior_velocity_planner)/config/virtual_traffic_light.param.yaml"/>
+            <param from="$(find-pkg-share behavior_velocity_planner)/config/occlusion_spot.param.yaml"/>
+            <param from="$(find-pkg-share behavior_velocity_planner)/config/no_stopping_area.param.yaml"/>
+            <param from="$(find-pkg-share behavior_velocity_planner)/config/speed_bump.param.yaml"/>
+            <param from="$(var run_out_param_path)"/>
+            <param from="$(var out_of_lane_param_path)"/>
 
-        <node pkg="behavior_velocity_planner" exec="behavior_velocity_planner_node" name="behavior_velocity_planner" output="screen">
+            <param from="$(var motion_velocity_smoother_param_path)"/>
+            <param from="$(var behavior_velocity_smoother_type_param_path)"/>
+            <param from="$(var behavior_velocity_planner_param_path)"/>
 
-          <remap from="~/input/path_with_lane_id" to="path_with_lane_id"/>
-          <remap from="~/input/vector_map" to="/map/vector_map"/>
-          <remap from="~/input/vehicle_odometry" to="/localization/kinematic_state"/>
-          <remap from="~/input/accel" to="/localization/acceleration"/>
-          <remap from="~/input/dynamic_objects" to="/perception/object_recognition/objects"/>
-          <remap from="~/input/no_ground_pointcloud" to="/perception/obstacle_segmentation/pointcloud"/>
-          <remap from="~/input/traffic_signals" to="/perception/traffic_light_recognition/traffic_signals"/>
-          <remap from="~/input/virtual_traffic_light_states" to="/awapi/tmp/virtual_traffic_light_states"/>
-          <remap from="~/input/occupancy_grid" to="/sensing/lidar/occupancy_grid"/>
-          <remap from="~/output/path" to="path"/>
-          <remap from="~/output/stop_reasons" to="/planning/scenario_planning/status/stop_reasons"/>
-          <remap from="~/output/infrastructure_commands" to="/planning/scenario_planning/status/infrastructure_commands"/>
-          <remap from="~/output/traffic_signal" to="debug/traffic_signal"/>
+            <param from="$(var vehicle_info_param_file)"/>
+            <param from="$(var nearest_search_param_path)"/>
+            <param from="$(var common_param_path)"/>
 
+            <param name="launch_stop_line" value="False"/>
+            <param name="launch_crosswalk" value="False"/>
+            <param name="launch_traffic_light" value="False"/>
+            <param name="launch_intersection" value="False"/>
+            <param name="launch_blind_spot" value="False"/>
+            <param name="launch_detection_area" value="False"/>
+            <param name="launch_virtual_traffic_light" value="False"/>
+            <param name="launch_occlusion_spot" value="False"/>
+            <param name="launch_no_stopping_area" value="False"/>
+            <param name="launch_speed_bump" value="False"/>
+          </node>
+        </group>
+        <!-- close /planning/lane_driving/behavior_planning -->
 
-          <param from="$(find-pkg-share behavior_velocity_planner)/config/blind_spot.param.yaml"/>
-          <param from="$(find-pkg-share behavior_velocity_planner)/config/crosswalk.param.yaml"/>
-          <param from="$(find-pkg-share behavior_velocity_planner)/config/detection_area.param.yaml"/>
-          <param from="$(find-pkg-share behavior_velocity_planner)/config/intersection.param.yaml"/>
-          <param from="$(find-pkg-share behavior_velocity_planner)/config/stop_line.param.yaml"/>
-          <param from="$(find-pkg-share behavior_velocity_planner)/config/traffic_light.param.yaml"/>
-          <param from="$(find-pkg-share behavior_velocity_planner)/config/virtual_traffic_light.param.yaml"/>
-          <param from="$(find-pkg-share behavior_velocity_planner)/config/occlusion_spot.param.yaml"/>
-          <param from="$(find-pkg-share behavior_velocity_planner)/config/no_stopping_area.param.yaml"/>
-          <param from="$(find-pkg-share behavior_velocity_planner)/config/speed_bump.param.yaml"/>
-          <param from="$(var run_out_param_path)"/>
-          <param from="$(var out_of_lane_param_path)"/>
-
-          <param from="$(var motion_velocity_smoother_param_path)"/>
-          <param from="$(var behavior_velocity_smoother_type_param_path)"/>
-          <param from="$(var behavior_velocity_planner_param_path)"/>
-
-          <param from="$(var vehicle_info_param_file)"/>
-          <param from="$(var nearest_search_param_path)"/>
-          <param from="$(var common_param_path)"/>
-
-          <param name="launch_stop_line" value="False"/>
-          <param name="launch_crosswalk" value="False"/>
-          <param name="launch_traffic_light" value="False"/>
-          <param name="launch_intersection" value="False"/>
-          <param name="launch_blind_spot" value="False"/>
-          <param name="launch_detection_area" value="False"/>
-          <param name="launch_virtual_traffic_light" value="False"/>
-          <param name="launch_occlusion_spot" value="False"/>
-          <param name="launch_no_stopping_area" value="False"/>
-          <param name="launch_speed_bump" value="False"/>
-
-        </node>
-
+        <!-- motion planning module -->
+        <group>
+          <push-ros-namespace namespace="motion_planning"/>
+          <set_remap from="~/input/path" to="/planning/scenario_planning/lane_driving/behavior_planning/path"/>
+          <set_remap from="~/input/odometry" to="/localization/kinematic_state"/>
+          <set_remap from="~/output/path" to="/planning/scenario_planning/lane_driving/trajectory"/>
+          <node pkg="obstacle_avoidance_planner" exec="obstacle_avoidance_planner_node" name="obstacle_avoidance_planner" output="screen">
+            <param from="$(var vehicle_param_file)"/>
+            <param from="$(var nearest_search_param_path)"/>
+            <param from="$(var obstacle_avoidance_planner_param_path)"/>
+          </node>
+        </group>
       </group>
+      <!-- close /planning/scenario_planning/lane_driving -->
 
-      <!-- motion planning module -->
+      <!-- scenario selector -->
       <group>
-        <push-ros-namespace namespace="motion_planning"/>
-        <set_remap from="~/input/path" to="/planning/scenario_planning/lane_driving/behavior_velocity_planner/path"/>
-        <set_remap from="~/input/odometry" to="/localization/kinematic_state"/>
-        <set_remap from="~/output/path" to="obstacle_avoidance_planner/trajectory"/>
-        <node pkg="obstacle_avoidance_planner" exec="obstacle_avoidance_planner_node" name="obstacle_avoidance_planner" output="screen">
-          <param from="$(var vehicle_param_file)"/>
-          <param from="$(var nearest_search_param_path)"/>
-          <param from="$(var obstacle_avoidance_planner_param_path)"/>
-        </node>
+        <include file="$(find-pkg-share scenario_selector)/launch/scenario_selector.launch.xml">
+          <arg name="input_lane_driving_trajectory" value="/planning/scenario_planning/lane_driving/trajectory"/>
+          <arg name="input_parking_trajectory" value="/planning/scenario_planning/parking/trajectory"/>
+          <arg name="input_lanelet_map" value="/map/vector_map"/>
+          <arg name="input_route" value="/planning/mission_planning/route"/>
+          <arg name="input_odometry" value="/localization/kinematic_state"/>
+          <arg name="output_scenario" value="/planning/scenario_planning/scenario"/>
+          <arg name="output_trajectory" value="/planning/scenario_planning/scenario_selector/trajectory"/>
+          <arg name="is_parking_completed" value="/planning/scenario_planning/parking/is_completed"/>
+        </include>
       </group>
     </group>
-
+    <!-- close /planning/scenario_planning -->
 
     <!-- motion velocity smoother -->
     <group>
       <set_remap from="~/input/trajectory" to="/planning/scenario_planning/scenario_selector/trajectory"/>
-      <set_remap from="~/output/trajectory" to="/planning/scenario_planning/motion_velocity_smoother/trajectory"/>
+      <set_remap from="~/output/trajectory" to="/planning/scenario_planning/trajectory"/>
       <include file="$(find-pkg-share motion_velocity_smoother)/launch/motion_velocity_smoother.launch.xml">
         <arg name="smoother_type" value="$(var smoother_type)"/>
         <arg name="common_param_path" value="$(var common_param_path)"/>
@@ -202,7 +206,5 @@
         <arg name="smoother_param_path" value="$(var smoother_type_param_path)"/>
       </include>
     </group>
-
   </group>
-
 </launch>
