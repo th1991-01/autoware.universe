@@ -1,29 +1,7 @@
 <launch>
-  <!-- planning module -->
-  <arg name="vehicle_param_file"/>
-
-  <!-- common -->
-  <arg name="common_param_path"/>
-  <arg name="nearest_search_param_path"/>
-  <!-- mission planner -->
-  <arg name="mission_planner_param_path" default="$(find-pkg-share autoware_launch)/config/planning/mission_planning/mission_planner/mission_planner.param.yaml"/>
-  <!-- behavior path planner -->
-  <arg name="scene_module_manager_param_path" value="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/scene_module_manager.param.yaml"/>
-  <arg name="side_shift_param_path"/>
-  <arg name="avoidance_param_path"/>
-  <arg name="dynamic_avoidance_param_path"/>
-  <arg name="lane_change_param_path"/>
-  <arg name="goal_planner_param_path"/>
-  <arg name="pull_out_param_path"/>
-  <arg name="drivable_area_expansion_param_path"/>
-  <arg name="behavior_path_planner_param_path"/>
-  <!-- behavior velocity planner -->
-  <arg name="behavior_velocity_smoother_type_param_path"/>
-  <arg name="behavior_velocity_planner_param_path"/>
-  <!-- motion -->
-  <arg name="obstacle_avoidance_planner_param_path"/>
-  <!-- motion velocity smoother -->
-  <arg name="motion_velocity_smoother_param_path"/>
+  <arg name="vehicle_param_file" default="$(find-pkg-share $(var vehicle_model)_description)/config/vehicle_info.param.yaml"/>
+  <arg name="common_param_path" default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/common/common.param.yaml"/>
+  <arg name="nearest_search_param_path" default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/common/nearest_search.param.yaml"/>
 
   <group>
     <push-ros-namespace namespace="planning"/>
@@ -32,7 +10,9 @@
       <push-ros-namespace namespace="mission_planning"/>
 
       <!-- mission planning module -->
-      <include file="$(find-pkg-share mission_planner)/launch/mission_planner.launch.xml"/>
+      <include file="$(find-pkg-share mission_planner)/launch/mission_planner.launch.xml">
+        <arg name="mission_planner_param_path" value="$(find-pkg-share autoware_launch)/config/planning/mission_planning/mission_planner/mission_planner.param.yaml"/>
+      </include>
     </group>
 
     <group>
@@ -45,32 +25,34 @@
           <push-ros-namespace namespace="behavior_planning"/>
 
           <!-- behavior_path_planner -->
+          <arg name="behavior_path_config_path" default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/"/>
           <include file="$(find-pkg-share behavior_path_planner)/launch/behavior_path_planner.launch.xml">
             <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)"/>
             <arg name="nearest_search_param_path" value="$(var nearest_search_param_path)"/>
             <arg name="common_param_path" value="$(var common_param_path)"/>
 
-            <arg name="scene_module_manager_param_path" value="$(var scene_module_manager_param_path)"/>
-            <arg name="side_shift_param_path" value="$(var side_shift_param_path)"/>
-            <arg name="avoidance_param_path" value="$(var avoidance_param_path)"/>
-            <arg name="avoidance_by_lc_param_path" value="$(var avoidance_by_lc_param_path)"/>
-            <arg name="dynamic_avoidance_param_path" value="$(var dynamic_avoidance_param_path)"/>
-            <arg name="lane_change_param_path" value="$(var lane_change_param_path)"/>
-            <arg name="goal_planner_param_path" value="$(var goal_planner_param_path)"/>
-            <arg name="pull_out_param_path" value="$(var pull_out_param_path)"/>
-            <arg name="drivable_area_expansion_param_path" value="$(var drivable_area_expansion_param_path)"/>
-            <arg name="behavior_path_planner_param_path" value="$(var behavior_path_planner_param_path)"/>
+            <arg name="scene_module_manager_param_path" value="$(var behavior_path_config_path)/scene_module_manager.param.yaml"/>
+            <arg name="side_shift_param_path" value="$(var behavior_path_config_path)/side_shift/side_shift.param.yaml"/>
+            <arg name="avoidance_param_path" value="$(var behavior_path_config_path)/avoidance/avoidance.param.yaml"/>
+            <arg name="avoidance_by_lc_param_path" value="$(var behavior_path_config_path)/avoidance_by_lc/avoidance_by_lc.param.yaml"/>
+            <arg name="dynamic_avoidance_param_path" value="$(var behavior_path_config_path)/dynamic_avoidance/dynamic_avoidance.param.yaml"/>
+            <arg name="lane_change_param_path" value="$(var behavior_path_config_path)/lane_change/lane_change.param.yaml"/>
+            <arg name="goal_planner_param_path" value="$(var behavior_path_config_path)/goal_planner/goal_planner.param.yaml"/>
+            <arg name="pull_out_param_path" value="$(var behavior_path_config_path)/pull_out/pull_out.param.yaml"/>
+            <arg name="drivable_area_expansion_param_path" value="$(var behavior_path_config_path)/drivable_area_expansion.param.yaml"/>
+            <arg name="behavior_path_planner_param_path" value="$(var behavior_path_config_path)/behavior_path_planner.param.yaml"/>
           </include>
 
           <!-- behavior_velocity_planner -->
+          <arg name="behavior_velocity_config_path" default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/"/>
           <include file="$(find-pkg-share behavior_velocity_planner)/launch/behavior_velocity_planner.launch.xml">
             <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)"/>
             <arg name="nearest_search_param_path" value="$(var nearest_search_param_path)"/>
             <arg name="common_param_path" value="$(var common_param_path)"/>
 
-            <arg name="motion_velocity_smoother_param_path" value="$(var motion_velocity_smoother_param_path)"/>
-            <arg name="behavior_velocity_smoother_type_param_path" value="$(var behavior_velocity_smoother_type_param_path)"/>
-            <arg name="behavior_velocity_planner_param_path" value="$(var behavior_velocity_planner_param_path)"/>
+            <arg name="motion_velocity_smoother_param_path" value="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/common/motion_velocity_smoother/motion_velocity_smoother.param.yaml"/>
+            <arg name="behavior_velocity_smoother_type_param_path" value="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/common/motion_velocity_smoother/Analytical.param.yaml"/>
+            <arg name="behavior_velocity_planner_param_path" value="$(var behavior_velocity_config_path)/behavior_velocity_planner.param.yaml"/>
 
             <arg name="launch_stop_line" value="False"/>
             <arg name="launch_crosswalk" value="False"/>
@@ -94,7 +76,7 @@
           <node pkg="obstacle_avoidance_planner" exec="obstacle_avoidance_planner_node" name="obstacle_avoidance_planner" output="screen">
             <param from="$(var vehicle_param_file)"/>
             <param from="$(var nearest_search_param_path)"/>
-            <param from="$(var obstacle_avoidance_planner_param_path)"/>
+            <param from="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/obstacle_avoidance_planner.param.yaml"/>
           </node>
         </group>
       </group>
@@ -105,11 +87,14 @@
 
     <!-- motion velocity smoother -->
     <group>
+      <arg name="velocity_smoother_config" default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/common/motion_velocity_smoother"/>
       <set_remap from="~/input/trajectory" to="/planning/scenario_planning/scenario_selector/trajectory"/>
       <set_remap from="~/output/trajectory" to="/planning/scenario_planning/trajectory"/>
       <include file="$(find-pkg-share motion_velocity_smoother)/launch/motion_velocity_smoother.launch.xml">
         <arg name="nearest_search_param_path" value="$(var nearest_search_param_path)"/>
         <arg name="common_param_path" value="$(var common_param_path)"/>
+        <arg name="param_path" value="$(var velocity_smoother_config)/motion_velocity_smoother.param.yaml"/>
+        <arg name="smoother_param_path" value="$(var velocity_smoother_config)/JerkFiltered.param.yaml"/>
       </include>
     </group>
   </group>
