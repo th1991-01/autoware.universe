@@ -515,7 +515,6 @@ size_t PredictedPathCheckerNode::insertStopPoint(
   const size_t stop_idx = stop_point.first + 1;
   trajectory.insert(trajectory.begin() + static_cast<int>(stop_idx), stop_point.second);
 
-  debug_ptr_->pushPose(nearest_collision_point.pose, PoseType::Collision);
   debug_ptr_->pushPose(stop_point.second.pose, PoseType::Stop);
   return stop_idx;
 }
