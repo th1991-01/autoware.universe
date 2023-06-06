@@ -582,4 +582,5 @@ void PredictedPathCheckerNode::filterObstacles(
 }  // namespace autoware::motion::control::predicted_path_checker
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(autoware::motion::control::predicted_path_checker::PredictedPathCheckerNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(
+  autoware::motion::control::predicted_path_checker::PredictedPathCheckerNode)
