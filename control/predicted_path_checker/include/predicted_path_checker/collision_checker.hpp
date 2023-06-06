@@ -40,7 +40,7 @@
 #include <utility>
 #include <vector>
 
-namespace predicted_path_checker
+namespace autoware::motion::control::predicted_path_checker
 {
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_planning_msgs::msg::TrajectoryPoint;
@@ -123,6 +123,6 @@ private:
   vehicle_info_util::VehicleInfo vehicle_info_;
   std::vector<PredictedObjectWithDetectionTime> predicted_object_history_{};
 };
-}  // namespace predicted_path_checker
+}  // namespace autoware::motion::control::predicted_path_checker
 
 #endif  // PREDICTED_PATH_CHECKER__COLLISION_CHECKER_HPP_

@@ -21,7 +21,7 @@
 #include <utility>
 #include <vector>
 
-namespace predicted_path_checker
+namespace autoware::motion::control::predicted_path_checker
 {
 CollisionChecker::CollisionChecker(
   rclcpp::Node * node, std::shared_ptr<PredictedPathCheckerDebugNode> debug_ptr)
@@ -228,4 +228,4 @@ CollisionChecker::checkDynamicObjects(
   }
   return boost::none;
 }
-}  // namespace predicted_path_checker
+}  // namespace autoware::motion::control::predicted_path_checker

@@ -38,7 +38,7 @@ using tier4_autoware_utils::createMarkerOrientation;
 using tier4_autoware_utils::createMarkerScale;
 using tier4_autoware_utils::createPoint;
 
-namespace predicted_path_checker
+namespace autoware::motion::control::predicted_path_checker
 {
 PredictedPathCheckerDebugNode::PredictedPathCheckerDebugNode(
   rclcpp::Node * node, const double base_link2front)
@@ -326,4 +326,4 @@ visualization_msgs::msg::MarkerArray PredictedPathCheckerDebugNode::makeVisualiz
   return msg;
 }
 
-}  // namespace predicted_path_checker
+}  // namespace autoware::motion::control::predicted_path_checker
