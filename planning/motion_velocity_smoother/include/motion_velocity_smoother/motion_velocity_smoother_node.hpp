@@ -40,6 +40,8 @@
 #include "tier4_planning_msgs/msg/stop_speed_exceeded.hpp"  // temporary
 #include "tier4_planning_msgs/msg/velocity_limit.hpp"       // temporary
 
+#include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
+
 #include <iostream>
 #include <memory>
 #include <string>
@@ -58,6 +60,7 @@ using nav_msgs::msg::Odometry;
 using tier4_debug_msgs::msg::Float32Stamped;        // temporary
 using tier4_planning_msgs::msg::StopSpeedExceeded;  // temporary
 using tier4_planning_msgs::msg::VelocityLimit;      // temporary
+using autoware_adapi_v1_msgs::msg::OperationModeState;
 
 struct Motion
 {
@@ -76,6 +79,14 @@ private:
   rclcpp::Subscription<Odometry>::SharedPtr sub_current_odometry_;
   rclcpp::Subscription<Trajectory>::SharedPtr sub_current_trajectory_;
   rclcpp::Subscription<VelocityLimit>::SharedPtr sub_external_velocity_limit_;
+  rclcpp::Subscription<OperationModeState>::SharedPtr sub_operation_mode_;
+  OperationModeState::SharedPtr operation_mode_;
+  TrajectoryPoints modifyVelocityFromEgoVelocity(const TrajectoryPoints & reference_trajectory);
+  TrajectoryPoints modifyVelocityFromEgoVelocity(const TrajectoryPoints & reference_trajectory, const TrajectoryPoint & merge_point);
+  TrajectoryPoint::SharedPtr merge_point_;
+  double modifying_velocity_;
+  bool isExceedMergePoint(const TrajectoryPoints & reference_trajectory, const TrajectoryPoint & merge_point);
+
 
   Odometry::ConstSharedPtr current_odometry_ptr_;  // current odometry
   VelocityLimit::ConstSharedPtr external_velocity_limit_ptr_{

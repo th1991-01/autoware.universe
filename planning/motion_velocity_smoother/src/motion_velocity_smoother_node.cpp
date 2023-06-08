@@ -95,6 +95,10 @@ MotionVelocitySmootherNode::MotionVelocitySmootherNode(const rclcpp::NodeOptions
     "~/input/external_velocity_limit_mps", 1,
     std::bind(&MotionVelocitySmootherNode::onExternalVelocityLimit, this, _1));
 
+  sub_operation_mode_ = create_subscription<OperationModeState>(
+    "~/input/external_velocity_limit_mps", 1,
+    [this](const OperationModeState::SharedPtr msg) { operation_mode_ = msg; });
+
   // parameter update
   set_param_res_ = this->add_on_set_parameters_callback(
     std::bind(&MotionVelocitySmootherNode::onParameter, this, _1));
@@ -386,8 +390,90 @@ bool MotionVelocitySmootherNode::checkData() const
     RCLCPP_ERROR(get_logger(), "input trajectory size must > 1. Skip computation.");
     return false;
   }
+  if (!operation_mode_) {
+    RCLCPP_INFO(get_logger(), "waiting operation_mode topic...");
+    return false;
+  }
 
   return true;
+}
+
+TrajectoryPoints MotionVelocitySmootherNode::modifyVelocityFromEgoVelocity(
+  const TrajectoryPoints & reference_trajectory)
+{
+  auto p = smoother_->getBaseParam();
+  std::map<double, double> jerk_profile;
+
+  const auto ego_v = std::abs(current_odometry_ptr_->twist.twist.linear.x);
+  const auto ego_a = 0.0;  // todo
+
+  modifying_velocity_ = ego_v;
+
+  const auto distance_margin = ego_v * 1.5;  // 1.5 sec
+
+  const auto arc_length_array = trajectory_utils::calcArclengthArray(reference_trajectory);
+
+  // find point where the ego velocity can merge to the planned velocity
+  size_t merge_index = reference_trajectory.size() - 1;
+  for (size_t i = 0; i < reference_trajectory.size(); ++i) {
+    const auto point = reference_trajectory.at(i);
+    const auto current_distance = arc_length_array.at(i);
+    double required_distance_to_merge = 0.0;
+    if (!trajectory_utils::calcStopDistWithJerkConstraints(
+      ego_v, ego_a, p.max_jerk, p.min_jerk, p.min_decel, point.longitudinal_velocity_mps,
+      jerk_profile, required_distance_to_merge)) {
+        RCLCPP_ERROR(get_logger(), "calcStopDistWithJerkConstraints failure in modifyVelocityFromEgoVelocity");
+      }
+
+    required_distance_to_merge += distance_margin;
+    
+    // find stop point
+    if (required_distance_to_merge < current_distance) {
+        RCLCPP_INFO(
+          get_logger(),
+          "merge point found: i = %lu, required_distance_to_merge = %f, current_distance = %f", i,
+          required_distance_to_merge, current_distance);
+        merge_index = i;
+        merge_point_ = std::make_shared<TrajectoryPoint>(point);
+        break;
+    }
+  }
+
+  if (merge_index == reference_trajectory.size() - 1) {
+    RCLCPP_WARN(get_logger(), "modifyVelocityFromEgoVelocity: merge point was not found");
+  }
+
+  // modify velocity to overwrite with ego velocity
+  TrajectoryPoints modified_trajectory = reference_trajectory;
+  for (size_t i = 0; i <= merge_index; ++i) {
+    modified_trajectory.at(i).longitudinal_velocity_mps = ego_v;
+  }
+
+  return modified_trajectory;
+}
+
+TrajectoryPoints MotionVelocitySmootherNode::modifyVelocityFromEgoVelocity(
+  const TrajectoryPoints & reference_trajectory, const TrajectoryPoint & merge_point)
+{
+  const auto merge_index = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    reference_trajectory, merge_point.pose);
+
+  // modify velocity to overwrite with ego velocity
+  TrajectoryPoints modified_trajectory = reference_trajectory;
+  for (size_t i = 0; i <= merge_index; ++i) {
+    modified_trajectory.at(i).longitudinal_velocity_mps = modifying_velocity_;
+  }
+
+  return modified_trajectory;
+}
+
+bool MotionVelocitySmootherNode::isExceedMergePoint(
+  const TrajectoryPoints & reference_trajectory, const TrajectoryPoint & merge_point)
+{
+  const double signed_arc_length = motion_utils::calcSignedArcLength(
+    reference_trajectory, current_odometry_ptr_->pose.pose.position, merge_point.pose.position);
+
+  return signed_arc_length < 0.0;
 }
 
 void MotionVelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstSharedPtr msg)
@@ -404,6 +490,19 @@ void MotionVelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstShar
 
   // calculate trajectory velocity
   auto input_points = motion_utils::convertToTrajectoryPointArray(*base_traj_raw_ptr_);
+
+  if (operation_mode_->mode != OperationModeState::AUTONOMOUS) {
+    RCLCPP_INFO(get_logger(), "modified because it is MANUAL mode");
+    input_points = modifyVelocityFromEgoVelocity(input_points);
+  } else if (merge_point_) {
+    if (!isExceedMergePoint(input_points, *merge_point_)) {
+        RCLCPP_INFO(get_logger(), "modified because it is AUTONOMOUS mode but merge point it not reached yet");
+        input_points = modifyVelocityFromEgoVelocity(input_points, *merge_point_);
+    } else {
+      RCLCPP_INFO(get_logger(), "REACHED!!! RESET!!!");
+      merge_point_.reset();
+    }
+  }
 
   // guard for invalid trajectory
   input_points = motion_utils::removeOverlapPoints(input_points);
