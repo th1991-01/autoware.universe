@@ -77,15 +77,34 @@ bool LaneChangeInterface::isExecutionReady() const
 
 ModuleStatus LaneChangeInterface::updateState()
 {
+  const auto toStr = [](const ModuleStatus state) {
+    if (state == ModuleStatus::IDLE) {
+      return "IDLE";
+    } else if (state == ModuleStatus::RUNNING) {
+      return "RUNNING";
+    } else if (state == ModuleStatus::SUCCESS) {
+      return "SUCCESS";
+    } else if (state == ModuleStatus::FAILURE) {
+      return "FAILURE";
+    } else {
+      return "XXX";
+    }
+  };
+  const auto ret = [&](const ModuleStatus state, const auto line){
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("lane_change_debug"), line << ": [LC] updateState is done: " << toStr(current_state_) << " -> " << toStr(state));
+    return state;
+  };
+
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("lane_change_debug"), __LINE__ << ": [LC] updateState is called");
   if (!isActivated() || isWaitingApproval()) {
-    return ModuleStatus::IDLE;
+    return ret(ModuleStatus::IDLE, __LINE__);
   }
 
   if (!module_type_->isValidPath()) {
 #ifdef USE_OLD_ARCHITECTURE
-    return ModuleStatus::FAILURE;
+    return ret(ModuleStatus::FAILURE, __LINE__);
 #else
-    return ModuleStatus::RUNNING;
+    return ret(ModuleStatus::RUNNING, __LINE__);
 #endif
   }
 
@@ -96,12 +115,12 @@ ModuleStatus LaneChangeInterface::updateState()
     if (module_type_->hasFinishedAbort()) {
       resetLaneChangeModule();
     }
-    return ModuleStatus::RUNNING;
+    return ret(ModuleStatus::RUNNING, __LINE__);
 #endif
   }
 
   if (module_type_->hasFinishedLaneChange()) {
-    return ModuleStatus::SUCCESS;
+    return ret(ModuleStatus::SUCCESS, __LINE__);
   }
 
   const auto [is_safe, is_object_coming_from_rear] = module_type_->isApprovedPathSafe();
@@ -109,7 +128,7 @@ ModuleStatus LaneChangeInterface::updateState()
   setObjectDebugVisualization();
   if (is_safe) {
     module_type_->toNormalState();
-    return ModuleStatus::RUNNING;
+    return ret(ModuleStatus::RUNNING, __LINE__);
   }
 
   if (!module_type_->isCancelEnabled()) {
@@ -121,7 +140,7 @@ ModuleStatus LaneChangeInterface::updateState()
     } else {
       module_type_->toNormalState();
     }
-    return ModuleStatus::RUNNING;
+    return ret(ModuleStatus::RUNNING, __LINE__);
   }
 
   if (!module_type_->isAbleToReturnCurrentLane()) {
@@ -133,7 +152,7 @@ ModuleStatus LaneChangeInterface::updateState()
     } else {
       module_type_->toNormalState();
     }
-    return ModuleStatus::RUNNING;
+    return ret(ModuleStatus::RUNNING, __LINE__);
   }
 
   if (module_type_->isNearEndOfLane()) {
@@ -145,7 +164,7 @@ ModuleStatus LaneChangeInterface::updateState()
     } else {
       module_type_->toNormalState();
     }
-    return ModuleStatus::RUNNING;
+    return ret(ModuleStatus::RUNNING, __LINE__);
   }
 
   if (module_type_->isEgoOnPreparePhase()) {
@@ -159,7 +178,7 @@ ModuleStatus LaneChangeInterface::updateState()
     if (!isWaitingApproval()) {
       resetLaneChangeModule();
     }
-    return ModuleStatus::RUNNING;
+    return ret(ModuleStatus::RUNNING, __LINE__);
 #endif
   }
 
@@ -172,7 +191,7 @@ ModuleStatus LaneChangeInterface::updateState()
     } else {
       module_type_->toNormalState();
     }
-    return ModuleStatus::RUNNING;
+    return ret(ModuleStatus::RUNNING, __LINE__);
   }
 
   const auto found_abort_path = module_type_->getAbortPath();
@@ -185,14 +204,14 @@ ModuleStatus LaneChangeInterface::updateState()
     } else {
       module_type_->toNormalState();
     }
-    return ModuleStatus::RUNNING;
+    return ret(ModuleStatus::RUNNING, __LINE__);
   }
 
   RCLCPP_WARN_STREAM_THROTTLE(
     getLogger().get_child(module_type_->getModuleTypeStr()), *clock_, 5000,
     "Lane change path is unsafe. Abort lane change.");
   module_type_->toAbortState();
-  return ModuleStatus::RUNNING;
+  return ret(ModuleStatus::RUNNING, __LINE__);
 }
 
 void LaneChangeInterface::resetLaneChangeModule()
@@ -211,6 +230,7 @@ void LaneChangeInterface::updateData()
 
 BehaviorModuleOutput LaneChangeInterface::plan()
 {
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("lane_change_debug"), __LINE__ << ": [LC] plan is called");
   resetPathCandidate();
   resetPathReference();
 
@@ -227,11 +247,13 @@ BehaviorModuleOutput LaneChangeInterface::plan()
   updateSteeringFactorPtr(output);
   clearWaitingApproval();
 
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("lane_change_debug"), __LINE__ << ": [LC] plan is done");
   return output;
 }
 
 BehaviorModuleOutput LaneChangeInterface::planWaitingApproval()
 {
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("lane_change_debug"), __LINE__ << ": [LC] planWaitingApproval is called");
   *prev_approved_path_ = *getPreviousModuleOutput().path;
   module_type_->insertStopPoint(*prev_approved_path_);
 
@@ -263,6 +285,7 @@ BehaviorModuleOutput LaneChangeInterface::planWaitingApproval()
 
   setObjectDebugVisualization();
 
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("lane_change_debug"), __LINE__ << ": [LC] planWaitingApproval is done");
   return out;
 }
 
@@ -535,6 +558,8 @@ void LaneChangeBTInterface::processOnEntry()
 
 BehaviorModuleOutput LaneChangeBTInterface::plan()
 {
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("lane_change_debug"), __LINE__ << ": [LC] plan is called");
+
   resetPathCandidate();
   resetPathReference();
   is_activated_ = isActivated();
@@ -550,11 +575,13 @@ BehaviorModuleOutput LaneChangeBTInterface::plan()
   updateSteeringFactorPtr(output);
   clearWaitingApproval();
 
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("lane_change_debug"), __LINE__ << ": [LC] plan is done");
   return output;
 }
 
 BehaviorModuleOutput LaneChangeBTInterface::planWaitingApproval()
 {
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("lane_change_debug"), __LINE__ << ": [LC] planWaitingApproval is called");
   const auto path = module_type_->getReferencePath();
   if (!path.points.empty()) {
     *prev_approved_path_ = module_type_->getReferencePath();
@@ -573,6 +600,7 @@ BehaviorModuleOutput LaneChangeBTInterface::planWaitingApproval()
     candidate.start_distance_to_path_change, candidate.finish_distance_to_path_change);
   is_abort_path_approved_ = false;
 
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("lane_change_debug"), __LINE__ << ": [LC] planWaitingApproval is done");
   return out;
 }
 
