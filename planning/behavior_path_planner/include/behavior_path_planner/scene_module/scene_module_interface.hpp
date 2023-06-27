@@ -188,18 +188,22 @@ public:
 #ifdef USE_OLD_ARCHITECTURE
     current_state_ = ModuleStatus::RUNNING;
 #endif
+    RCLCPP_INFO(logger_, "[scene module interface: run()] called---");
 
     updateData();
 
     if (!isWaitingApproval()) {
+      RCLCPP_INFO(logger_, "[scene module interface: run()] isWaitingApproval is false. Do plan.");
       return plan();
     }
 
     // module is waiting approval. Check it.
     if (isActivated()) {
+      RCLCPP_INFO(logger_, "[scene module interface: run()] Was waiting approval, and now Activated. Do plan()");
       RCLCPP_DEBUG(logger_, "Was waiting approval, and now approved. Do plan().");
       return plan();
     } else {
+      RCLCPP_INFO(logger_, "[scene module interface: run()] Was waiting approval, and now NOT Activated. Do planWaitingApproval()");
       RCLCPP_DEBUG(logger_, "keep waiting approval... Do planCandidate().");
       return planWaitingApproval();
     }
@@ -264,14 +268,18 @@ public:
   bool isActivated()
   {
     if (rtc_interface_ptr_map_.empty()) {
+      RCLCPP_INFO(logger_, "[scene module interface: isActivated()] rtc_interface_ptr_map_ is empty.");
       return true;
     }
 
     for (auto itr = rtc_interface_ptr_map_.begin(); itr != rtc_interface_ptr_map_.end(); ++itr) {
       if (itr->second->isRegistered(uuid_map_.at(itr->first))) {
-        return itr->second->isActivated(uuid_map_.at(itr->first));
+        const auto is_activated = itr->second->isActivated(uuid_map_.at(itr->first));
+        RCLCPP_INFO(logger_, "[scene module interface: isActivated()] uuid is registered. is_activated = %s", std::string(is_activated ? "True" : "False").c_str());
+        return is_activated;
       }
     }
+    RCLCPP_INFO(logger_, "[scene module interface: isActivated()] uuid is NOT registered. False");
     return false;
   }
 
