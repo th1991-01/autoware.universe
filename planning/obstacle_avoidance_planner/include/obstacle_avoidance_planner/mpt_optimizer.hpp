@@ -267,6 +267,7 @@ private:
   void updateFixedPoint(std::vector<ReferencePoint> & ref_points) const;
   void updateDeltaArcLength(std::vector<ReferencePoint> & ref_points) const;
   void updateExtraPoints(std::vector<ReferencePoint> & ref_points) const;
+  void padReferencePoints(std::vector<ReferencePoint> & ref_points) const;
 
   ValueMatrix calcValueMatrix(
     const std::vector<ReferencePoint> & reference_points,

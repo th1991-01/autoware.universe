@@ -518,6 +518,9 @@ std::optional<std::vector<TrajectoryPoint>> MPTOptimizer::getModelPredictiveTraj
     return std::nullopt;
   }
 
+  // pad reference points so that the points size will be constant
+  padReferencePoints(ref_points);
+
   // 2. calculate B and W matrices where x = B u + W
   const auto mpt_mat = state_equation_generator_.calcMatrix(ref_points);
 
@@ -600,7 +603,7 @@ std::vector<ReferencePoint> MPTOptimizer::calcReferencePoints(
   ref_points_spline = SplineInterpolationPoints2d(ref_points);
   ego_seg_idx = trajectory_utils::findEgoSegmentIndex(ref_points, p.ego_pose, ego_nearest_param_);
 
-  // 5. update fixed points, and resample
+  // 5. update fixed points, pad points and resample
   // NOTE: This must be after backward cropping.
   //       New start point may be added and resampled. Spline calculation is required.
   updateFixedPoint(ref_points);
@@ -1351,6 +1354,7 @@ MPTOptimizer::ConstraintMatrix MPTOptimizer::calcConstraintMatrix(
   if (mpt_param_.hard_constraint) {
     A_rows += N_ref * N_collision_check;
   }
+  // TODO(murooka) make the following size constant
   A_rows += fixed_points_indices.size() * D_x;
   if (mpt_param_.steer_limit_constraint) {
     A_rows += N_u;
@@ -1488,6 +1492,22 @@ MPTOptimizer::ConstraintMatrix MPTOptimizer::calcConstraintMatrix(
   return constraint_matrix;
 }
 
+void MPTOptimizer::padReferencePoints(std::vector<ReferencePoint> & ref_points) const
+{
+  const int diff_size = static_cast<int>(ref_points.size()) - mpt_param_.num_points;
+
+  if (diff_size < 0) {
+    for ([[maybe_unused]] int i = 0; i < -diff_size; ++i) {
+      ref_points.push_back(ref_points.back());
+    }
+    return;
+  }
+
+  if (0 < diff_size) {
+    ref_points.erase(ref_points.begin() + diff_size, ref_points.end());
+  }
+}
+
 void MPTOptimizer::addSteerWeightR(
   std::vector<Eigen::Triplet<double>> & R_triplet_vec,
   const std::vector<ReferencePoint> & ref_points) const
@@ -1539,6 +1559,9 @@ std::optional<Eigen::VectorXd> MPTOptimizer::calcOptimizedSteerAngles(
   const auto f = toStdVector(updated_obj_mat.gradient);
   const auto upper_bound = toStdVector(updated_const_mat.upper_bound);
   const auto lower_bound = toStdVector(updated_const_mat.lower_bound);
+
+  std::cerr << P.rows() << " " << P.cols() << " " << f.size() << " " << upper_bound.size()
+            << std::endl;
 
   // solve qp
   time_keeper_ptr_->tic("solveOsqp");
@@ -1701,6 +1724,13 @@ std::optional<std::vector<TrajectoryPoint>> MPTOptimizer::calcMPTPoints(
     traj_point.pose = ref_point.offsetDeviation(lat_error, yaw_error);
     traj_point.longitudinal_velocity_mps = ref_point.longitudinal_velocity_mps;
 
+    if (!traj_points.empty()) {
+      if (
+        std::abs(traj_point.pose.position.x - traj_points.back().pose.position.x) < 1e-3 &&
+        std::abs(traj_point.pose.position.y - traj_points.back().pose.position.y) < 1e-3) {
+        continue;
+      }
+    }
     traj_points.push_back(traj_point);
   }
 
