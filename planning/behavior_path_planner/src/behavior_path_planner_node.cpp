@@ -470,7 +470,7 @@ void BehaviorPathPlannerNode::run()
     return;
   }
 
-  RCLCPP_DEBUG(get_logger(), "----- BehaviorPathPlannerNode start -----");
+  RCLCPP_INFO(get_logger(), "\n\n----- BehaviorPathPlannerNode start -----");
 
   // behavior_path_planner runs only in LANE DRIVING scenario.
   if (current_scenario_->current_scenario != Scenario::LANEDRIVING) {

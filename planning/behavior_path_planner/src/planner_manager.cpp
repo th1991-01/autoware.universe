@@ -80,28 +80,34 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
       /**
        * STEP1: get approved modules' output
        */
+      RCLCPP_WARN(logger_, "PlannerManager::runApprovedModules() is called.");
       const auto approved_modules_output = runApprovedModules(data);
 
       /**
        * STEP2: check modules that need to be launched
        */
+      RCLCPP_WARN(logger_, "PlannerManager::getRequestModules() is called.");
       const auto request_modules = getRequestModules(approved_modules_output);
 
       /**
        * STEP3: if there is no module that need to be launched, return approved modules' output
        */
+      RCLCPP_WARN(logger_, "PlannerManager::step 3() is called.");
       if (request_modules.empty()) {
         processing_time_.at("total_time") = stop_watch_.toc("total_time", true);
+        RCLCPP_ERROR(logger_, "PlannerManager request_modules is empty. return");
         return approved_modules_output;
       }
 
       /**
        * STEP4: if there is module that should be launched, execute the module
        */
+      RCLCPP_WARN(logger_, "PlannerManager::step 4() is called.");
       const auto [highest_priority_module, candidate_modules_output] =
         runRequestModules(request_modules, data, approved_modules_output);
       if (!highest_priority_module) {
         processing_time_.at("total_time") = stop_watch_.toc("total_time", true);
+        RCLCPP_ERROR(logger_, "PlannerManager highest_priority_module is empty. return");
         return approved_modules_output;
       }
 
@@ -111,14 +117,17 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
        * shape modification that needs approval. On the other hand, it could include velocity
        * profile modification.
        */
+      RCLCPP_WARN(logger_, "PlannerManager::step 5() is called. highest_priority_module = %s", highest_priority_module->name().c_str());
       if (highest_priority_module->isWaitingApproval()) {
         processing_time_.at("total_time") = stop_watch_.toc("total_time", true);
+        RCLCPP_ERROR(logger_, "PlannerManager highest_priority_module is isWaitingApproval. return");
         return candidate_modules_output;
       }
 
       /**
        * STEP6: if the candidate module is approved, push the module into approved_module_ptrs_
        */
+      RCLCPP_WARN(logger_, "PlannerManager::step 6() is called.");
       addApprovedModule(highest_priority_module);
       clearCandidateModules();
       debug_info_.emplace_back(highest_priority_module, Action::ADD, "To Approval");
@@ -176,6 +185,13 @@ void PlannerManager::generateCombinedDrivableArea(
 std::vector<SceneModulePtr> PlannerManager::getRequestModules(
   const BehaviorModuleOutput & previous_module_output) const
 {
+  RCLCPP_WARN(logger_, "PlannerManager::getRequestModules() is called.");
+  for (const auto & m : manager_ptrs_) {
+    RCLCPP_WARN(logger_, "manager_ptrs_: m = %s", m->getModuleName().c_str());
+  }
+  for (const auto & m : approved_module_ptrs_) {
+    RCLCPP_INFO(logger_, "approved_module_ptrs_: m = %s", m->name().c_str());
+  }
   std::vector<SceneModulePtr> request_modules{};
 
   /**
@@ -190,6 +206,7 @@ std::vector<SceneModulePtr> PlannerManager::getRequestModules(
       std::find_if(approved_module_ptrs_.begin(), approved_module_ptrs_.end(), find_block_module);
 
     if (itr != approved_module_ptrs_.end()) {
+      RCLCPP_INFO(logger_, "isSimultaneousExecutableAsApprovedModule is false for all modules");
       return {};
     }
   }
@@ -200,6 +217,7 @@ std::vector<SceneModulePtr> PlannerManager::getRequestModules(
 
   for (const auto & manager_ptr : manager_ptrs_) {
     stop_watch_.tic(manager_ptr->getModuleName());
+    RCLCPP_INFO(logger_, "-- %s module check start --", manager_ptr->getModuleName().c_str());
 
     /**
      * don't launch candidate module if approved modules already exist.
@@ -207,6 +225,7 @@ std::vector<SceneModulePtr> PlannerManager::getRequestModules(
     if (!approved_module_ptrs_.empty()) {
       if (!manager_ptr->isSimultaneousExecutableAsApprovedModule()) {
         toc(manager_ptr->getModuleName());
+        RCLCPP_INFO(logger_, "%s isSimultaneousExecutableAsApprovedModule is false.", manager_ptr->getModuleName().c_str());
         continue;
       }
     }
@@ -221,16 +240,23 @@ std::vector<SceneModulePtr> PlannerManager::getRequestModules(
         candidate_module_ptrs_.begin(), candidate_module_ptrs_.end(), find_same_name_module);
 
       if (itr == candidate_module_ptrs_.end()) {
-        if (manager_ptr->canLaunchNewModule()) {
+        const auto canLaunchNewModule = manager_ptr->canLaunchNewModule();
+        RCLCPP_INFO(logger_, "%s can launch new module? = %d", name.c_str(), canLaunchNewModule);
+        if (canLaunchNewModule) {
           const auto new_module_ptr = manager_ptr->getNewModule();
 
-          if (manager_ptr->isExecutionRequested(new_module_ptr, previous_module_output)) {
+          const auto isExecutionRequested = manager_ptr->isExecutionRequested(new_module_ptr, previous_module_output);
+
+          RCLCPP_INFO(logger_, "%s requests launch? = %d", name.c_str(), isExecutionRequested);
+          if (isExecutionRequested) {
             request_modules.emplace_back(new_module_ptr);
           }
         }
 
         toc(manager_ptr->getModuleName());
         continue;
+      } else {
+        RCLCPP_INFO(logger_, "%s module is already in the candidate ", name.c_str());
       }
     }
 

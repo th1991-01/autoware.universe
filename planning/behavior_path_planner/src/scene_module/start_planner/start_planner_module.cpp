@@ -63,9 +63,11 @@ StartPlannerModule::StartPlannerModule(
 BehaviorModuleOutput StartPlannerModule::run()
 {
   if (!isActivated()) {
+    RCLCPP_ERROR(getLogger(), "StartPlannerModule::run() is_activate is false. call planWaitingApproval");
     return planWaitingApproval();
   }
 
+  RCLCPP_ERROR(getLogger(), "StartPlannerModule::run() is_activate is true. call plan");
   return plan();
 }
 
@@ -84,6 +86,7 @@ bool StartPlannerModule::isExecutionRequested() const
   if (
     tier4_autoware_utils::calcDistance2d(goal_pose.position, current_pose.position) <
     parameters_->th_arrived_distance) {
+    RCLCPP_INFO(getLogger(), "start planner isExecutionRequested(): goal is too close. no need start. return false.");
     return false;
   }
 
@@ -92,16 +95,29 @@ bool StartPlannerModule::isExecutionRequested() const
     *planner_data_->prev_route_id != planner_data_->route_handler->getRouteUuid();
 
   if (current_state_ == ModuleStatus::RUNNING) {
+    RCLCPP_INFO(getLogger(), "start planner isExecutionRequested(): already running. return true.");
     return true;
   }
 
+  RCLCPP_INFO(
+    getLogger(),
+    "start planner isExecutionRequested(): no prev route = %d, "
+    "route has changed = %d",
+    static_cast<bool>(!planner_data_->prev_route_id),
+    static_cast<bool>(
+      *planner_data_->prev_route_id != planner_data_->route_handler->getRouteUuid()));
+
   if (!has_received_new_route_) {
+    RCLCPP_INFO(
+      getLogger(),
+      "start planner isExecutionRequested(): has_received_new_route_ is false. return false.");
     return false;
   }
 
   const bool is_stopped = utils::l2Norm(planner_data_->self_odometry->twist.twist.linear) <
                           parameters_->th_stopped_velocity;
   if (!is_stopped) {
+    RCLCPP_INFO(getLogger(), "start planner isExecutionRequested(): vehicle is moving return false.");
     return false;
   }
 
@@ -121,6 +137,7 @@ bool StartPlannerModule::isExecutionRequested() const
   auto lanes = current_lanes;
   lanes.insert(lanes.end(), pull_out_lanes.begin(), pull_out_lanes.end());
   if (LaneDepartureChecker::isOutOfLane(lanes, vehicle_footprint)) {
+    RCLCPP_INFO(getLogger(), "start planner isExecutionRequested(): ego vehicle is out of lanes. return false.");
     return false;
   }
 
@@ -160,6 +177,7 @@ BehaviorModuleOutput StartPlannerModule::plan()
   }
 
   if (isWaitingApproval()) {
+    RCLCPP_INFO(getLogger(), "StartPlannerModule::plan clearWaitingApproval is calling");
     clearWaitingApproval();
     resetPathCandidate();
     resetPathReference();
@@ -297,6 +315,7 @@ PathWithLaneId StartPlannerModule::getFullPath() const
 
 BehaviorModuleOutput StartPlannerModule::planWaitingApproval()
 {
+  RCLCPP_INFO(getLogger(), "StartPlannerModule::planWaitingApproval(), calling waitApproval().");
   updatePullOutStatus();
   waitApproval();
 
@@ -705,6 +724,7 @@ void StartPlannerModule::checkBackFinished()
     status_.back_finished = true;
 
     // request start_planner approval
+    RCLCPP_INFO(getLogger(), "StartPlannerModule::checkBackFinished(), calling waitApproval().");
     waitApproval();
     removeRTCStatus();
     for (auto itr = uuid_map_.begin(); itr != uuid_map_.end(); ++itr) {
