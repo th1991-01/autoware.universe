@@ -87,9 +87,11 @@ bool StartPlannerModule::isExecutionRequested() const
     return false;
   }
 
-  has_received_new_route_ =
-    !planner_data_->prev_route_id ||
-    *planner_data_->prev_route_id != planner_data_->route_handler->getRouteUuid();
+  if (!has_received_new_route_) {
+    has_received_new_route_ =
+      !planner_data_->prev_route_id ||
+      *planner_data_->prev_route_id != planner_data_->route_handler->getRouteUuid();
+  }
 
   if (current_state_ == ModuleStatus::RUNNING) {
     return true;
