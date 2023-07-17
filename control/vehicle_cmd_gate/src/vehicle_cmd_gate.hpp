@@ -84,6 +84,21 @@ struct Commands
   }
 };
 
+template <typename T>
+void update_param(
+  const std::vector<rclcpp::Parameter> & parameters, const std::string & name, T & value)
+{
+  auto it = std::find_if(
+    parameters.cbegin(), parameters.cend(),
+    [&name](const rclcpp::Parameter & parameter) { return parameter.get_name() == name; });
+  if (it != parameters.cend()) {
+    const T old = value;
+    value = static_cast<T>(it->template get_value<T>());
+    std::cerr << "[vehicle_cmd_gate] param changed. " << name << ": " << old << " -> " << value
+              << std::endl;
+  }
+}
+
 class VehicleCmdGate : public rclcpp::Node
 {
 public:
@@ -99,6 +114,7 @@ private:
   rclcpp::Publisher<GateMode>::SharedPtr gate_mode_pub_;
   rclcpp::Publisher<EngageMsg>::SharedPtr engage_pub_;
   rclcpp::Publisher<OperationModeState>::SharedPtr operation_mode_pub_;
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float64MultiArrayStamped>::SharedPtr deadzone_debug_pub_;
 
   // Subscription
   rclcpp::Subscription<Heartbeat>::SharedPtr external_emergency_stop_heartbeat_sub_;
@@ -116,11 +132,22 @@ private:
   bool is_engaged_;
   bool is_system_emergency_ = false;
   bool is_external_emergency_stop_ = false;
-  double current_steer_ = 0;
+  double current_steer_ = 0.0;
+  double prev_steer_ = 0.0;
   GateMode current_gate_mode_;
   MrmState current_mrm_state_;
   Odometry current_kinematics_;
   double current_acceleration_ = 0.0;
+
+  struct SteeringDeadZoneParam
+  {
+    bool enable_compensation = true;
+    double lpf_gain = 0.0;
+    double deadzone_threshold = 0.0;
+    double deadzone_compensation = 0.0;
+    double steering_moving_threshold = 0.0;
+  } steering_deadzone_param_;
+  rclcpp::Time deadzone_prev_time_;
 
   // Heartbeat
   std::shared_ptr<rclcpp::Time> emergency_state_heartbeat_received_time_;
@@ -214,6 +241,8 @@ private:
   VehicleCmdFilter filter_;
   AckermannControlCommand filterControlCommand(const AckermannControlCommand & msg);
 
+  AckermannControlCommand addDeadZoneCompensation(const AckermannControlCommand & base_cmd);
+
   // filtering on transition
   OperationModeState current_operation_mode_;
   VehicleCmdFilter filter_on_transition_;
@@ -225,6 +254,10 @@ private:
   // stop checker
   std::unique_ptr<VehicleStopChecker> vehicle_stop_checker_;
   double stop_check_duration_;
+
+  rclcpp::Node::OnSetParametersCallbackHandle::SharedPtr set_param_res_;
+  rcl_interfaces::msg::SetParametersResult paramCallback(
+    const std::vector<rclcpp::Parameter> & parameters);
 };
 
 }  // namespace vehicle_cmd_gate

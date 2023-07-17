@@ -42,7 +42,10 @@ const char * getGateModeName(const GateMode::_data_type & gate_mode)
 }  // namespace
 
 VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
-: Node("vehicle_cmd_gate", node_options), is_engaged_(false), updater_(this)
+: Node("vehicle_cmd_gate", node_options),
+  is_engaged_(false),
+  deadzone_prev_time_(0, 0, this->get_clock()->get_clock_type()),
+  updater_(this)
 {
   using std::placeholders::_1;
   using std::placeholders::_2;
@@ -68,6 +71,8 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
   engage_pub_ = create_publisher<EngageMsg>("output/engage", durable_qos);
   pub_external_emergency_ = create_publisher<Emergency>("output/external_emergency", durable_qos);
   operation_mode_pub_ = create_publisher<OperationModeState>("output/operation_mode", durable_qos);
+  deadzone_debug_pub_ = create_publisher<tier4_debug_msgs::msg::Float64MultiArrayStamped>(
+    "output/deadzone_debug", durable_qos);
 
   // Subscriber
   external_emergency_stop_heartbeat_sub_ = create_subscription<Heartbeat>(
@@ -83,9 +88,11 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
     "input/acceleration", 1, [this](AccelWithCovarianceStamped::SharedPtr msg) {
       current_acceleration_ = msg->accel.accel.linear.x;
     });
-  steer_sub_ = create_subscription<SteeringReport>(
-    "input/steering", 1,
-    [this](SteeringReport::SharedPtr msg) { current_steer_ = msg->steering_tire_angle; });
+  steer_sub_ =
+    create_subscription<SteeringReport>("input/steering", 1, [this](SteeringReport::SharedPtr msg) {
+      prev_steer_ = current_steer_;
+      current_steer_ = msg->steering_tire_angle;
+    });
   operation_mode_sub_ = create_subscription<OperationModeState>(
     "input/operation_mode", rclcpp::QoS(1).transient_local(),
     [this](const OperationModeState::SharedPtr msg) { current_operation_mode_ = *msg; });
@@ -150,6 +157,17 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
     declare_parameter<double>("moderate_stop_service_acceleration");
   stop_check_duration_ = declare_parameter<double>("stop_check_duration");
 
+  // steering deadzone
+  {
+    auto & p = steering_deadzone_param_;
+    p.enable_compensation = declare_parameter<bool>("steering_deadzone.enable_compensation");
+    p.lpf_gain = declare_parameter<double>("steering_deadzone.lpf_gain");
+    p.deadzone_threshold = declare_parameter<double>("steering_deadzone.deadzone_threshold");
+    p.deadzone_compensation = declare_parameter<double>("steering_deadzone.deadzone_compensation");
+    p.steering_moving_threshold =
+      declare_parameter<double>("steering_deadzone.steering_moving_threshold");
+  }
+
   // Vehicle Parameter
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
   {
@@ -212,6 +230,9 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
     rclcpp::create_timer(this, get_clock(), period_ns, std::bind(&VehicleCmdGate::onTimer, this));
   timer_pub_status_ = rclcpp::create_timer(
     this, get_clock(), period_ns, std::bind(&VehicleCmdGate::publishStatus, this));
+
+  set_param_res_ =
+    add_on_set_parameters_callback(std::bind(&VehicleCmdGate::paramCallback, this, _1));
 }
 
 bool VehicleCmdGate::isHeartbeatTimeout(
@@ -420,12 +441,58 @@ void VehicleCmdGate::publishControlCommands(const Commands & commands)
 
   // Publish commands
   vehicle_cmd_emergency_pub_->publish(vehicle_cmd_emergency);
-  control_cmd_pub_->publish(filtered_commands.control);
+
+  const auto control_cmd = addDeadZoneCompensation(filtered_commands.control);
+
+  control_cmd_pub_->publish(control_cmd);
   adapi_pause_->publish();
   moderate_stop_interface_->publish();
 
   // Save ControlCmd to steering angle when disengaged
   prev_control_cmd_ = filtered_commands.control;
+}
+
+AckermannControlCommand VehicleCmdGate::addDeadZoneCompensation(
+  const AckermannControlCommand & base_cmd)
+{
+  const auto & p = steering_deadzone_param_;
+  tier4_debug_msgs::msg::Float64MultiArrayStamped debug;
+  debug.data.resize(7);
+
+  const auto dt = (now() - deadzone_prev_time_).seconds();
+  deadzone_prev_time_ = now();
+
+  const double steer_rate = (current_steer_ - prev_steer_) / dt;
+  const bool is_steer_stopped = std::abs(steer_rate) < p.steering_moving_threshold;
+  const bool is_moving = std::abs(base_cmd.longitudinal.speed) > 0.01;
+
+  // Need deadzone compensation
+  auto comp_cmd = base_cmd;
+  if (p.enable_compensation && is_moving && is_steer_stopped) {
+    if (base_cmd.lateral.steering_tire_angle + p.deadzone_threshold > current_steer_) {
+      comp_cmd.lateral.steering_tire_angle += p.deadzone_compensation;
+      std::cerr << "deadzone compensation for positive (+++): base = "
+                << base_cmd.lateral.steering_tire_angle << ", curr = " << current_steer_
+                << ", comp = " << comp_cmd.lateral.steering_tire_angle << std::endl;
+    } else if (base_cmd.lateral.steering_tire_angle - p.deadzone_threshold < current_steer_) {
+      comp_cmd.lateral.steering_tire_angle -= p.deadzone_compensation;
+      std::cerr << "deadzone compensation for negative (---): base = "
+                << base_cmd.lateral.steering_tire_angle << ", curr = " << current_steer_
+                << ", comp = " << comp_cmd.lateral.steering_tire_angle << std::endl;
+    }
+  }
+
+  debug.data.at(0) = prev_steer_;
+  debug.data.at(1) = current_steer_;
+  debug.data.at(2) = steer_rate;
+  debug.data.at(3) = static_cast<double>(is_moving);
+  debug.data.at(4) = static_cast<double>(is_steer_stopped);
+  debug.data.at(5) = base_cmd.lateral.steering_tire_angle;
+  debug.data.at(6) = comp_cmd.lateral.steering_tire_angle;
+
+  deadzone_debug_pub_->publish(debug);
+
+  return comp_cmd;
 }
 
 void VehicleCmdGate::publishEmergencyStopControlCommands()
@@ -693,6 +760,29 @@ void VehicleCmdGate::checkExternalEmergencyStop(diagnostic_updater::DiagnosticSt
   }
 
   stat.summary(status.level, status.message);
+}
+
+rcl_interfaces::msg::SetParametersResult VehicleCmdGate::paramCallback(
+  const std::vector<rclcpp::Parameter> & parameters)
+{
+  rcl_interfaces::msg::SetParametersResult result;
+  result.successful = true;
+  result.reason = "success";
+
+  try {
+    auto & p = steering_deadzone_param_;
+    const std::string ns = "steering_deadzone.";
+    update_param(parameters, ns + "enable_compensation", p.enable_compensation);
+    update_param(parameters, ns + "lpf_gain", p.lpf_gain);
+    update_param(parameters, ns + "deadzone_threshold", p.deadzone_threshold);
+    update_param(parameters, ns + "deadzone_compensation", p.deadzone_compensation);
+    update_param(parameters, ns + "steering_moving_threshold", p.steering_moving_threshold);
+  } catch (const rclcpp::exceptions::InvalidParameterTypeException & e) {
+    result.successful = false;
+    result.reason = e.what();
+  }
+
+  return result;
 }
 
 }  // namespace vehicle_cmd_gate
