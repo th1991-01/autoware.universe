@@ -80,6 +80,8 @@ private:
   const double steer_delay_;              //!< @brief time delay for steering command [s]
   const double steer_time_constant_;      //!< @brief time constant for steering dynamics
 
+  double steer_rate_;
+
   /**
    * @brief set queue buffer for input command
    * @param [in] dt delta time

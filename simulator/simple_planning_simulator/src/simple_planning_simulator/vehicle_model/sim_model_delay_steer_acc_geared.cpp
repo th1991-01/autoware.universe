@@ -83,6 +83,8 @@ void SimModelDelaySteerAccGeared::update(const double & dt)
   const auto prev_state = state_;
   updateRungeKutta(dt, delayed_input);
 
+  steer_rate_ = (state_(IDX::STEER) - prev_state(IDX::STEER)) / dt;
+
   // take velocity limit explicitly
   state_(IDX::VX) = std::max(-vx_lim_, std::min(state_(IDX::VX), vx_lim_));
 
@@ -116,12 +118,19 @@ Eigen::VectorXd SimModelDelaySteerAccGeared::calcModel(
   double steer_rate = -(steer - steer_des) / steer_time_constant_;
   steer_rate = sat(steer_rate, steer_rate_lim_, -steer_rate_lim_);
 
+  const auto dead_zone = 0.5 * M_PI / 180.0;
+
   Eigen::VectorXd d_state = Eigen::VectorXd::Zero(dim_x_);
   d_state(IDX::X) = vel * cos(yaw);
   d_state(IDX::Y) = vel * sin(yaw);
   d_state(IDX::YAW) = vel * std::tan(steer) / wheelbase_;
   d_state(IDX::VX) = acc;
-  d_state(IDX::STEER) = steer_rate;
+  if (std::abs(steer_rate_) < 0.001 && std::abs(steer - steer_des) < dead_zone) {
+    d_state(IDX::STEER) = 0.0;
+  } else {
+    d_state(IDX::STEER) = steer_rate;
+  }
+
   d_state(IDX::ACCX) = -(acc - acc_des) / acc_time_constant_;
 
   return d_state;
