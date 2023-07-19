@@ -360,6 +360,7 @@ DynamicAvoidanceModule::calcTargetObjectsCandidate() const
     const bool is_object_in_right_lanes = isCentroidWithinLanelets(obj_pose.position, right_lanes);
     const bool is_object_in_left_lanes = isCentroidWithinLanelets(obj_pose.position, left_lanes);
 
+    /*
     // check if lateral distance is smaller than threshold
     const double min_obj_lat_dist_to_path = [&]() {
       const double obj_lat_dist_to_path =
@@ -370,8 +371,9 @@ DynamicAvoidanceModule::calcTargetObjectsCandidate() const
     }();
     const bool is_object_far_from_path =
       1.0 < min_obj_lat_dist_to_path;  // TODO(murooka) use rosparam
+    */
 
-    if (is_object_far_from_path && !is_object_in_right_lanes && !is_object_in_right_lanes) {
+    if (!is_object_in_right_lanes && !is_object_in_right_lanes) {
       continue;
     }
 
