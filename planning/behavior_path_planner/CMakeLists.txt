@@ -49,9 +49,9 @@ set(common_src
   src/utils/drivable_area_expansion/expansion.cpp
   src/utils/geometric_parallel_parking/geometric_parallel_parking.cpp
   src/utils/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.cpp
-  src/marker_util/debug_utilities.cpp
-  src/marker_util/avoidance/debug.cpp
-  src/marker_util/lane_change/debug.cpp
+  src/marker_utils/utils.cpp
+  src/marker_utils/avoidance/debug.cpp
+  src/marker_utils/lane_change/debug.cpp
 )
 
 if(COMPILE_WITH_OLD_ARCHITECTURE)

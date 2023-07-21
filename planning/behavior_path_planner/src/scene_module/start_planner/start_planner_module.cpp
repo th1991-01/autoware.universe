@@ -14,7 +14,7 @@
 
 #include "behavior_path_planner/scene_module/start_planner/start_planner_module.hpp"
 
-#include "behavior_path_planner/marker_util/debug_utilities.hpp"
+#include "behavior_path_planner/marker_utils/utils.hpp"
 #include "behavior_path_planner/utils/create_vehicle_footprint.hpp"
 #include "behavior_path_planner/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
