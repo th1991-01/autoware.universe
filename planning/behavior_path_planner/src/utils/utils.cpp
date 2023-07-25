@@ -113,6 +113,16 @@ bool checkHasSameLane(
   const auto has_same = [&](const auto & ll) { return ll.id() == target_lane.id(); };
   return std::find_if(lanelets.begin(), lanelets.end(), has_same) != lanelets.end();
 }
+
+bool isLeft(
+  const geometry_msgs::msg::Point & start_point, const geometry_msgs::msg::Point & end_point,
+  const geometry_msgs::msg::Point & target_point)
+{
+  const double angle_to_target =
+    std::atan2(target_point.y - start_point.y, target_point.x - start_point.x);
+  const double angle_to_end = std::atan2(end_point.y - start_point.y, end_point.x - start_point.x);
+  return 0.0 < tier4_autoware_utils::normalizeRadian(angle_to_target - angle_to_end);
+}
 }  // namespace
 
 namespace behavior_path_planner::utils
@@ -319,6 +329,7 @@ std::vector<PolygonPoint> concatenateTwoPolygons(
     return is_front_polygon_outside ? back_polygon : front_polygon;
   };
 
+  // NOTE: Polygon points is assumed to be clock-wise.
   std::vector<PolygonPoint> concatenated_polygon;
   for (size_t loop_idx = 0; loop_idx < 100; ++loop_idx) {
     concatenated_polygon.push_back(get_out_poly().at(outside_idx));
@@ -328,22 +339,51 @@ std::vector<PolygonPoint> concatenateTwoPolygons(
     const size_t curr_idx = outside_idx;
     const size_t next_idx = outside_idx + 1;
 
+    // NOTE: Two polygons may have two intersection points. Therefore the closest intersection
+    //       point is used.
+    std::optional<size_t> closest_idx = std::nullopt;
+    double min_dist_to_intersection = std::numeric_limits<double>::max();
+    PolygonPoint closest_intersect_point;
     for (size_t i = 0; i < get_in_poly().size() - 1; ++i) {
       const auto intersection = intersect(
         get_out_poly().at(curr_idx).point, get_out_poly().at(next_idx).point,
         get_in_poly().at(i).point, get_in_poly().at(i + 1).point);
-      if (intersection) {
-        const auto intersect_point = PolygonPoint{intersection.get(), 0, 0.0, 0.0};
-        concatenated_polygon.push_back(intersect_point);
-
-        is_front_polygon_outside = !is_front_polygon_outside;
-        outside_idx = i;
-        break;
+      if (!intersection) {
+        continue;
+      }
+      if (!isLeft(
+            get_out_poly().at(curr_idx).point, get_out_poly().at(next_idx).point,
+            get_in_poly().at(i + 1).point)) {
+        // NOTE: Polygon points is assumed to be clock-wise.
+        continue;
+      }
+      const auto intersect_point = PolygonPoint{*intersection, 0, 0.0, 0.0};
+      const double dist_to_intersection =
+        tier4_autoware_utils::calcDistance2d(get_out_poly().at(curr_idx).point, *intersection);
+      if (dist_to_intersection < min_dist_to_intersection) {
+        closest_idx = i;
+        min_dist_to_intersection = dist_to_intersection;
+        closest_intersect_point = intersect_point;
       }
     }
-    outside_idx += 1;
 
+    if (closest_idx) {
+      outside_idx = *closest_idx;
+      concatenated_polygon.push_back(closest_intersect_point);
+      is_front_polygon_outside = !is_front_polygon_outside;
+    }
+
+    outside_idx += 1;
     if (99 <= loop_idx) {
+      std::cerr << "==============================================================================="
+                   "====================="
+                << std::endl;
+      std::cerr << "========================================= loop idx "
+                   "================================================="
+                << std::endl;
+      std::cerr << "==============================================================================="
+                   "====================="
+                << std::endl;
       return front_polygon;
     }
   }
