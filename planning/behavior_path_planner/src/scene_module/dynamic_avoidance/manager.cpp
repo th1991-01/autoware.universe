@@ -53,8 +53,19 @@ void DynamicAvoidanceModuleManager::updateModuleParams(
     updateParam<int>(
       parameters, ns + "successive_num_to_entry_dynamic_avoidance_condition",
       p->successive_num_to_entry_dynamic_avoidance_condition);
+
     updateParam<double>(
       parameters, ns + "min_obj_lat_offset_to_ego_path", p->min_obj_lat_offset_to_ego_path);
+    updateParam<double>(
+      parameters, ns + "max_obj_lat_offset_to_ego_path", p->max_obj_lat_offset_to_ego_path);
+
+    updateParam<double>(
+      parameters, ns + "front_object.max_object_angle", p->max_front_object_angle);
+
+    updateParam<double>(
+      parameters, ns + "crossing_object.min_object_vel", p->min_crossing_object_vel);
+    updateParam<double>(
+      parameters, ns + "crossing_object.max_object_angle", p->max_crossing_object_angle);
   }
 
   {  // drivable_area_generation
