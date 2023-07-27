@@ -106,6 +106,7 @@ Controller::LongitudinalControllerMode Controller::getLongitudinalControllerMode
 void Controller::onTrajectory(const autoware_auto_planning_msgs::msg::Trajectory::SharedPtr msg)
 {
   current_trajectory_ptr_ = msg;
+  callbackTimerControl();
 }
 
 void Controller::onOdometry(const nav_msgs::msg::Odometry::SharedPtr msg)
