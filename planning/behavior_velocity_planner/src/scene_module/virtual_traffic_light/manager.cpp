@@ -85,6 +85,7 @@ void VirtualTrafficLightModuleManager::launchNewModules(
          path, planner_data_->route_handler_->getLaneletMapPtr())) {
     // Use lanelet_id to unregister module when the route is changed
     const auto module_id = m.second.id();
+    const auto lane_id = m.second.id();
     if (!isModuleRegistered(module_id)) {
       registerModule(std::make_shared<VirtualTrafficLightModule>(
         module_id, *m.first, m.second, planner_param_,

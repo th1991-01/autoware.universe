@@ -289,11 +289,12 @@ size_t insertStopVelocityAtCollision(
 }  // namespace
 
 VirtualTrafficLightModule::VirtualTrafficLightModule(
-  const int64_t module_id, const lanelet::autoware::VirtualTrafficLight & reg_elem,
+  const int64_t module_id, const int64_t lane_id, const lanelet::autoware::VirtualTrafficLight & reg_elem,
   lanelet::ConstLanelet lane, const PlannerParam & planner_param, const rclcpp::Logger logger,
   const rclcpp::Clock::SharedPtr clock)
 : SceneModuleInterface(module_id, logger, clock),
   module_id_(module_id),
+  lane_id_(lane_id),
   reg_elem_(reg_elem),
   lane_(lane),
   planner_param_(planner_param)
