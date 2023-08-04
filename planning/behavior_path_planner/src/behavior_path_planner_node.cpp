@@ -1063,6 +1063,7 @@ StartPlannerParameters BehaviorPathPlannerNode::getStartPlannerParam()
   p.collision_check_margin = declare_parameter<double>(ns + "collision_check_margin");
   p.collision_check_distance_from_end =
     declare_parameter<double>(ns + "collision_check_distance_from_end");
+  p.th_moving_object_velocity = declare_parameter<double>(ns + "th_moving_object_velocity");
   // shift pull out
   p.enable_shift_pull_out = declare_parameter<bool>(ns + "enable_shift_pull_out");
   p.minimum_shift_pull_out_distance =
