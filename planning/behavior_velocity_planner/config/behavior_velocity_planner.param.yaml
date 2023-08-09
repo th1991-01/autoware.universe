@@ -2,6 +2,7 @@
   ros__parameters:
     launch_stop_line: true
     launch_crosswalk: true
+    launch_walkway: true
     launch_traffic_light: true
     launch_intersection: true
     launch_blind_spot: true
