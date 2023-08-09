@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(behavior_velocity_crosswalk_module)
+project(behavior_velocity_walkway_module)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
@@ -16,8 +16,7 @@ include_directories(
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/debug.cpp
   src/manager.cpp
-  src/scene_crosswalk.cpp
-  src/util.cpp
+  src/scene_walkway.cpp
 )
 
 ament_auto_package()
