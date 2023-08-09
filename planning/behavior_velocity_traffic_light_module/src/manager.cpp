@@ -28,9 +28,7 @@ namespace behavior_velocity_planner
 using lanelet::TrafficLight;
 
 TrafficLightModuleManager::TrafficLightModuleManager(rclcpp::Node & node)
-: SceneModuleManagerInterfaceWithRTC(
-    node, getModuleName(),
-    node.declare_parameter<bool>(std::string(getModuleName()) + ".enable_rtc"))
+: SceneModuleManagerInterfaceWithRTC(node, getModuleName())
 {
   const std::string ns(getModuleName());
   planner_param_.stop_margin = node.declare_parameter<double>(ns + ".stop_margin");

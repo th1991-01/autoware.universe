@@ -326,9 +326,8 @@ protected:
 class SceneModuleManagerInterfaceWithRTC : public SceneModuleManagerInterface
 {
 public:
-  SceneModuleManagerInterfaceWithRTC(
-    rclcpp::Node & node, const char * module_name, const bool enable_rtc = true)
-  : SceneModuleManagerInterface(node, module_name), rtc_interface_(&node, module_name, enable_rtc)
+  SceneModuleManagerInterfaceWithRTC(rclcpp::Node & node, const char * module_name)
+  : SceneModuleManagerInterface(node, module_name), rtc_interface_(&node, module_name)
   {
   }
 

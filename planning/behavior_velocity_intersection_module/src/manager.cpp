@@ -30,13 +30,8 @@
 namespace behavior_velocity_planner
 {
 IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
-: SceneModuleManagerInterfaceWithRTC(
-    node, getModuleName(),
-    node.declare_parameter<bool>(std::string(getModuleName()) + ".enable_rtc.intersection")),
-  occlusion_rtc_interface_(
-    &node, "intersection_occlusion",
-    node.declare_parameter<bool>(
-      std::string(getModuleName()) + ".enable_rtc.intersection_to_occlusion"))
+: SceneModuleManagerInterfaceWithRTC(node, getModuleName()),
+  occlusion_rtc_interface_(&node, "intersection_occlusion")
 {
   const std::string ns(getModuleName());
   auto & ip = intersection_param_;
