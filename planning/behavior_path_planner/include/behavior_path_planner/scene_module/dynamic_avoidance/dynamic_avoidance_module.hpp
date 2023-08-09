@@ -257,7 +257,6 @@ public:
   {
     parameters_ = parameters;
   }
-#endif
 
   bool isExecutionRequested() const override;
   bool isExecutionReady() const override;

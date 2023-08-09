@@ -714,6 +714,12 @@ DynamicAvoidanceParameters BehaviorPathPlannerNode::getDynamicAvoidanceParam()
 {
   DynamicAvoidanceParameters p{};
 
+  {  // common
+    std::string ns = "dynamic_avoidance.common.";
+    p.enable_debug_info = declare_parameter<bool>(ns + "enable_debug_info");
+    p.use_hatched_road_markings = declare_parameter<bool>(ns + "use_hatched_road_markings");
+  }
+
   {  // target object
     std::string ns = "dynamic_avoidance.target_object.";
     p.avoid_car = declare_parameter<bool>(ns + "car");
@@ -727,14 +733,45 @@ DynamicAvoidanceParameters BehaviorPathPlannerNode::getDynamicAvoidanceParam()
     p.min_obstacle_vel = declare_parameter<double>(ns + "min_obstacle_vel");
     p.successive_num_to_entry_dynamic_avoidance_condition =
       declare_parameter<int>(ns + "successive_num_to_entry_dynamic_avoidance_condition");
+    p.successive_num_to_exit_dynamic_avoidance_condition =
+      declare_parameter<int>(ns + "successive_num_to_exit_dynamic_avoidance_condition");
+
     p.min_obj_lat_offset_to_ego_path =
       declare_parameter<double>(ns + "min_obj_lat_offset_to_ego_path");
+    p.max_obj_lat_offset_to_ego_path =
+      declare_parameter<double>(ns + "max_obj_lat_offset_to_ego_path");
+
+    p.min_time_to_start_cut_in =
+      declare_parameter<double>(ns + "cut_in_object.min_time_to_start_cut_in");
+    p.min_lon_offset_ego_to_cut_in_object =
+      declare_parameter<double>(ns + "cut_in_object.min_lon_offset_ego_to_object");
+
+    p.max_time_from_outside_ego_path_for_cut_out =
+      declare_parameter<double>(ns + "cut_out_object.max_time_from_outside_ego_path");
+    p.min_cut_out_object_lat_vel =
+      declare_parameter<double>(ns + "cut_out_object.min_object_lat_vel");
+
+    p.max_front_object_angle =
+      declare_parameter<double>(ns + "front_object.max_object_angle");
+
+    p.min_overtaking_crossing_object_vel =
+      declare_parameter<double>(ns + "crossing_object.min_overtaking_object_vel");
+    p.max_overtaking_crossing_object_angle =
+      declare_parameter<double>(ns + "crossing_object.max_overtaking_object_angle");
+    p.min_oncoming_crossing_object_vel =
+      declare_parameter<double>(ns + "crossing_object.min_oncoming_object_vel");
+    p.max_oncoming_crossing_object_angle =
+      declare_parameter<double>(ns + "crossing_object.max_oncoming_object_angle");
   }
 
   {  // drivable_area_generation
     std::string ns = "dynamic_avoidance.drivable_area_generation.";
     p.lat_offset_from_obstacle = declare_parameter<double>(ns + "lat_offset_from_obstacle");
     p.max_lat_offset_to_avoid = declare_parameter<double>(ns + "max_lat_offset_to_avoid");
+    p.max_time_for_lat_shift =
+      declare_parameter<double>(ns + "max_time_for_object_lat_shift");
+    p.lpf_gain_for_lat_avoid_to_offset =
+      declare_parameter<double>(ns + "lpf_gain_for_lat_avoid_to_offset");
 
     p.max_time_to_collision_overtaking_object =
       declare_parameter<double>(ns + "overtaking_object.max_time_to_collision");
