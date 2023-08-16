@@ -131,6 +131,7 @@ void AutowareStateNode::on_timer()
     const auto duration = now() - rclcpp::Time(routing_state_.stamp);
     if (2.0 < duration.seconds()) {
       routing_state_.state = RoutingState::UNSET;
+      RCLCPP_INFO(get_logger(), "Arrived goal. Reset route.");
     }
   }
 
