@@ -51,7 +51,13 @@ bool StartPlannerModuleManager::isSimultaneousExecutableAsApprovedModule() const
     if (!module->isBackFinished()) {
       return false;
     }
-    return enable_simultaneous_execution_as_candidate_module_;
+
+    // Other modules are not needed when freespace planning
+    if (module->isFreespacePlanning()) {
+      return false;
+    }
+
+    return enable_simultaneous_execution_as_approved_module_;
   };
 
   return std::all_of(registered_modules_.begin(), registered_modules_.end(), checker);
@@ -64,6 +70,12 @@ bool StartPlannerModuleManager::isSimultaneousExecutableAsCandidateModule() cons
     if (!module->isBackFinished()) {
       return false;
     }
+
+    // Other modules are not needed when freespace planning
+    if (module->isFreespacePlanning()) {
+      return false;
+    }
+
     return enable_simultaneous_execution_as_candidate_module_;
   };
 

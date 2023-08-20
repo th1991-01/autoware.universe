@@ -1095,6 +1095,71 @@ StartPlannerParameters BehaviorPathPlannerNode::getStartPlannerParam()
   p.backward_search_resolution = declare_parameter<double>(ns + "backward_search_resolution");
   p.backward_path_update_duration = declare_parameter<double>(ns + "backward_path_update_duration");
   p.ignore_distance_from_lane_end = declare_parameter<double>(ns + "ignore_distance_from_lane_end");
+  // freespace planner general params
+  {
+    std::string ns = "start_planner.freespace_planner.";
+    p.enable_freespace_planner = declare_parameter<bool>(ns + "enable_freespace_planner");
+    p.freespace_planner_algorithm =
+      declare_parameter<std::string>(ns + "freespace_planner_algorithm");
+    p.end_pose_search_start_distance =
+      declare_parameter<double>(ns + "end_pose_search_start_distance");
+    p.end_pose_search_end_distance = declare_parameter<double>(ns + "end_pose_search_end_distance");
+    p.end_pose_search_interval = declare_parameter<double>(ns + "end_pose_search_interval");
+    p.freespace_planner_velocity = declare_parameter<double>(ns + "velocity");
+    p.vehicle_shape_margin = declare_parameter<double>(ns + "vehicle_shape_margin");
+    p.freespace_planner_common_parameters.time_limit = declare_parameter<double>(ns + "time_limit");
+    p.freespace_planner_common_parameters.minimum_turning_radius =
+      declare_parameter<double>(ns + "minimum_turning_radius");
+    p.freespace_planner_common_parameters.maximum_turning_radius =
+      declare_parameter<double>(ns + "maximum_turning_radius");
+    p.freespace_planner_common_parameters.turning_radius_size =
+      declare_parameter<int>(ns + "turning_radius_size");
+    p.freespace_planner_common_parameters.maximum_turning_radius = std::max(
+      p.freespace_planner_common_parameters.maximum_turning_radius,
+      p.freespace_planner_common_parameters.minimum_turning_radius);
+    p.freespace_planner_common_parameters.turning_radius_size =
+      std::max(p.freespace_planner_common_parameters.turning_radius_size, 1);
+  }
+  //  freespace planner search config
+  {
+    std::string ns = "start_planner.freespace_planner.search_configs.";
+    p.freespace_planner_common_parameters.theta_size = declare_parameter<int>(ns + "theta_size");
+    p.freespace_planner_common_parameters.angle_goal_range =
+      declare_parameter<double>(ns + "angle_goal_range");
+    p.freespace_planner_common_parameters.curve_weight =
+      declare_parameter<double>(ns + "curve_weight");
+    p.freespace_planner_common_parameters.reverse_weight =
+      declare_parameter<double>(ns + "reverse_weight");
+    p.freespace_planner_common_parameters.lateral_goal_range =
+      declare_parameter<double>(ns + "lateral_goal_range");
+    p.freespace_planner_common_parameters.longitudinal_goal_range =
+      declare_parameter<double>(ns + "longitudinal_goal_range");
+  }
+  //  freespace planner costmap configs
+  {
+    std::string ns = "start_planner.freespace_planner.costmap_configs.";
+    p.freespace_planner_common_parameters.obstacle_threshold =
+      declare_parameter<int>(ns + "obstacle_threshold");
+  }
+  //  freespace planner astar
+  {
+    std::string ns = "start_planner.freespace_planner.astar.";
+    p.astar_parameters.only_behind_solutions =
+      declare_parameter<bool>(ns + "only_behind_solutions");
+    p.astar_parameters.use_back = declare_parameter<bool>(ns + "use_back");
+    p.astar_parameters.distance_heuristic_weight =
+      declare_parameter<double>(ns + "distance_heuristic_weight");
+  }
+  //   freespace planner rrtstar
+  {
+    std::string ns = "start_planner.freespace_planner.rrtstar.";
+    p.rrt_star_parameters.enable_update = declare_parameter<bool>(ns + "enable_update");
+    p.rrt_star_parameters.use_informed_sampling =
+      declare_parameter<bool>(ns + "use_informed_sampling");
+    p.rrt_star_parameters.max_planning_time = declare_parameter<double>(ns + "max_planning_time");
+    p.rrt_star_parameters.neighbor_radius = declare_parameter<double>(ns + "neighbor_radius");
+    p.rrt_star_parameters.margin = declare_parameter<double>(ns + "margin");
+  }
 
   // validation of parameters
   if (p.lateral_acceleration_sampling_num < 1) {
