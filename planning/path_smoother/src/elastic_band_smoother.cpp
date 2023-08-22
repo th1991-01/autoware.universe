@@ -19,6 +19,8 @@
 #include "path_smoother/utils/trajectory_utils.hpp"
 #include "rclcpp/time.hpp"
 
+#include <glog/logging.h>
+
 #include <chrono>
 #include <limits>
 
@@ -63,6 +65,9 @@ bool hasZeroVelocity(const TrajectoryPoint & traj_point)
 ElasticBandSmoother::ElasticBandSmoother(const rclcpp::NodeOptions & node_options)
 : Node("path_smoother", node_options), time_keeper_ptr_(std::make_shared<TimeKeeper>())
 {
+  google::InitGoogleLogging("path_smoother");
+  google::InstallFailureSignalHandler();
+
   // interface publisher
   traj_pub_ = create_publisher<Trajectory>("~/output/traj", 1);
   path_pub_ = create_publisher<Path>("~/output/path", 1);

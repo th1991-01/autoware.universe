@@ -24,6 +24,8 @@
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
+#include <glog/logging.h>
+
 #include <algorithm>
 #include <array>
 #include <random>
@@ -81,6 +83,9 @@ MissionPlanner::MissionPlanner(const rclcpp::NodeOptions & options)
   normal_route_(nullptr),
   mrm_route_(nullptr)
 {
+  google::InitGoogleLogging("mission_planner");
+  google::InstallFailureSignalHandler();
+
   map_frame_ = declare_parameter<std::string>("map_frame");
   reroute_time_threshold_ = declare_parameter<double>("reroute_time_threshold");
   minimum_reroute_length_ = declare_parameter<double>("minimum_reroute_length");

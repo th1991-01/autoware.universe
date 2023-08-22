@@ -24,6 +24,8 @@
 
 #include <boost/format.hpp>
 
+#include <glog/logging.h>
+
 #include <algorithm>
 #include <chrono>
 
@@ -334,6 +336,9 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
   vehicle_info_(vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo()),
   debug_data_ptr_(std::make_shared<DebugData>())
 {
+  google::InitGoogleLogging("obstacle_cruise_planner");
+  google::InstallFailureSignalHandler();
+
   using std::placeholders::_1;
 
   // subscriber

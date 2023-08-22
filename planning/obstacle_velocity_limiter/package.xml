@@ -20,6 +20,7 @@
   <depend>lanelet2_core</depend>
   <depend>lanelet2_extension</depend>
   <depend>libboost-dev</depend>
+  <depend>libgoogle-glog-dev</depend>
   <depend>motion_utils</depend>
   <depend>nav_msgs</depend>
   <depend>pcl_ros</depend>

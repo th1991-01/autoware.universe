@@ -31,6 +31,8 @@
 
 #include <boost/geometry.hpp>
 
+#include <glog/logging.h>
+
 #include <algorithm>
 #include <chrono>
 
@@ -43,6 +45,9 @@ ObstacleVelocityLimiterNode::ObstacleVelocityLimiterNode(const rclcpp::NodeOptio
   obstacle_params_(*this),
   velocity_params_(*this)
 {
+  google::InitGoogleLogging("obstacle_velocity_limiter");
+  google::InstallFailureSignalHandler();
+
   sub_trajectory_ = create_subscription<Trajectory>(
     "~/input/trajectory", 1, [this](const Trajectory::ConstSharedPtr msg) { onTrajectory(msg); });
   sub_occupancy_grid_ = create_subscription<OccupancyGrid>(

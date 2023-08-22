@@ -15,6 +15,7 @@ ament_auto_add_library(obstacle_cruise_planner_core SHARED
   src/pid_based_planner/pid_based_planner.cpp
   src/planner_interface.cpp
 )
+target_link_libraries(obstacle_cruise_planner_core glog)
 
 rclcpp_components_register_node(obstacle_cruise_planner_core
   PLUGIN "motion_planning::ObstacleCruisePlannerNode"

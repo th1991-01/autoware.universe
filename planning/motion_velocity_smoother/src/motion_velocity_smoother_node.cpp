@@ -21,6 +21,8 @@
 
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
+#include <glog/logging.h>
+
 #include <algorithm>
 #include <chrono>
 #include <limits>
@@ -36,6 +38,9 @@ namespace motion_velocity_smoother
 MotionVelocitySmootherNode::MotionVelocitySmootherNode(const rclcpp::NodeOptions & node_options)
 : Node("motion_velocity_smoother", node_options)
 {
+  google::InitGoogleLogging("motion_velocity_smoother");
+  google::InstallFailureSignalHandler();
+
   using std::placeholders::_1;
 
   // set common params

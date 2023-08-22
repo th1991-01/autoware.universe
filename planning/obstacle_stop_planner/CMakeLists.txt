@@ -22,6 +22,7 @@ target_include_directories(obstacle_stop_planner
 
 target_link_libraries(obstacle_stop_planner
     ${PCL_LIBRARIES}
+    glog
 )
 
 rclcpp_components_register_node(obstacle_stop_planner

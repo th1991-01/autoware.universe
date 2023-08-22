@@ -19,6 +19,8 @@
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
+#include <glog/logging.h>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -30,6 +32,9 @@ using diagnostic_msgs::msg::DiagnosticStatus;
 PlanningValidator::PlanningValidator(const rclcpp::NodeOptions & options)
 : Node("planning_validator", options)
 {
+  google::InitGoogleLogging("planning_validator");
+  google::InstallFailureSignalHandler();
+
   using std::placeholders::_1;
 
   sub_kinematics_ = create_subscription<Odometry>(

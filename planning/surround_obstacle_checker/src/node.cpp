@@ -32,6 +32,8 @@
 #include <tf2_eigen/tf2_eigen.hpp>
 #endif
 
+#include <glog/logging.h>
+
 #include <algorithm>
 #include <functional>
 #include <limits>
@@ -143,6 +145,9 @@ Polygon2d createSelfPolygon(const VehicleInfo & vehicle_info)
 SurroundObstacleCheckerNode::SurroundObstacleCheckerNode(const rclcpp::NodeOptions & node_options)
 : Node("surround_obstacle_checker_node", node_options)
 {
+  google::InitGoogleLogging("surround_obstacle_checker_node");
+  google::InstallFailureSignalHandler();
+
   // Parameters
   {
     auto & p = node_param_;

@@ -21,6 +21,7 @@
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
+#include <glog/logging.h>
 #include <lanelet2_routing/Route.h>
 #include <pcl/common/transforms.h>
 #include <pcl_conversions/pcl_conversions.h>
@@ -71,6 +72,9 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
   tf_listener_(tf_buffer_),
   planner_data_(*this)
 {
+  google::InitGoogleLogging("behavior_velocity_planner_node");
+  google::InstallFailureSignalHandler();
+
   using std::placeholders::_1;
   // Trigger Subscriber
   trigger_sub_path_with_lane_id_ =

@@ -10,6 +10,7 @@ find_package(pcl_conversions REQUIRED)
 ament_auto_add_library(obstacle_velocity_limiter_node SHARED
   DIRECTORY src
 )
+target_link_libraries(obstacle_velocity_limiter_node glog)
 
 ament_target_dependencies(obstacle_velocity_limiter_node PCL)
 target_include_directories(obstacle_velocity_limiter_node

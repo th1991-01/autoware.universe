@@ -14,8 +14,13 @@
 
 #include "static_centerline_optimizer/static_centerline_optimizer_node.hpp"
 
+#include <glog/logging.h>
+
 int main(int argc, char * argv[])
 {
+  google::InitGoogleLogging("static_centerline_optimizer");
+  google::InstallFailureSignalHandler();
+
   rclcpp::init(argc, argv);
 
   // initialize node

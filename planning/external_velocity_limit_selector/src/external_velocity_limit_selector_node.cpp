@@ -14,6 +14,8 @@
 
 #include "external_velocity_limit_selector/external_velocity_limit_selector_node.hpp"
 
+#include <glog/logging.h>
+
 #include <deque>
 #include <memory>
 #include <string>
@@ -88,6 +90,9 @@ ExternalVelocityLimitSelectorNode::ExternalVelocityLimitSelectorNode(
   const rclcpp::NodeOptions & node_options)
 : Node("external_velocity_limit_selector", node_options)
 {
+  google::InitGoogleLogging("external_velocity_limit_selector");
+  google::InstallFailureSignalHandler();
+
   using std::placeholders::_1;
   // Input
   sub_external_velocity_limit_from_api_ = this->create_subscription<VelocityLimit>(

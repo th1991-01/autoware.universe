@@ -7,6 +7,7 @@ autoware_package()
 ament_auto_add_library(external_velocity_limit_selector_node SHARED
   src/external_velocity_limit_selector_node.cpp
 )
+target_link_libraries(external_velocity_limit_selector_node glog)
 
 rclcpp_components_register_node(external_velocity_limit_selector_node
   PLUGIN "ExternalVelocityLimitSelectorNode"

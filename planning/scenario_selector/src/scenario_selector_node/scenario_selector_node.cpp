@@ -17,6 +17,7 @@
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 
+#include <glog/logging.h>
 #include <lanelet2_core/geometry/BoundingBox.h>
 #include <lanelet2_core/geometry/Lanelet.h>
 #include <lanelet2_core/geometry/LineString.h>
@@ -338,6 +339,9 @@ ScenarioSelectorNode::ScenarioSelectorNode(const rclcpp::NodeOptions & node_opti
   th_stopped_velocity_mps_(this->declare_parameter<double>("th_stopped_velocity_mps")),
   is_parking_completed_(false)
 {
+  google::InitGoogleLogging("scenario_selector");
+  google::InstallFailureSignalHandler();
+
   // Input
   sub_lane_driving_trajectory_ =
     this->create_subscription<autoware_auto_planning_msgs::msg::Trajectory>(

@@ -16,6 +16,7 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/rtc_auto_mode_manager_interface.cpp
   src/node.cpp
 )
+target_link_libraries(${PROJECT_NAME} glog)
 
 rclcpp_components_register_node(${PROJECT_NAME}
   PLUGIN "rtc_auto_mode_manager::RTCAutoModeManagerNode"

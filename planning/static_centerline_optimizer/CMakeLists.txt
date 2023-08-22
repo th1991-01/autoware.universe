@@ -36,6 +36,7 @@ target_include_directories(main
 
 target_link_libraries(main
   ${OpenCV_LIBRARIES}
+  glog
 )
 
 if(${rosidl_cmake_VERSION} VERSION_LESS 2.5.0)

@@ -7,6 +7,7 @@ autoware_package()
 ament_auto_add_library(scenario_selector_node SHARED
   src/scenario_selector_node/scenario_selector_node.cpp
 )
+target_link_libraries(scenario_selector_node glog)
 
 rclcpp_components_register_node(scenario_selector_node
   PLUGIN "ScenarioSelectorNode"

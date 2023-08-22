@@ -34,6 +34,8 @@
 
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
+#include <glog/logging.h>
+
 #include <algorithm>
 #include <deque>
 #include <memory>
@@ -221,6 +223,9 @@ namespace freespace_planner
 FreespacePlannerNode::FreespacePlannerNode(const rclcpp::NodeOptions & node_options)
 : Node("freespace_planner", node_options)
 {
+  google::InitGoogleLogging("freespace_planner");
+  google::InstallFailureSignalHandler();
+
   using std::placeholders::_1;
 
   // NodeParam

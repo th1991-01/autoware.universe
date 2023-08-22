@@ -33,6 +33,7 @@ ament_auto_add_library(obstacle_avoidance_planner SHARED
   src/utils/trajectory_utils.cpp
   src/utils/geometry_utils.cpp
 )
+target_link_libraries(obstacle_avoidance_planner glog)
 
 target_include_directories(obstacle_avoidance_planner
   SYSTEM PUBLIC

@@ -192,13 +192,6 @@ ModuleStatus StartPlannerModule::updateState()
 
 BehaviorModuleOutput StartPlannerModule::plan()
 {
-  static int count = 0;
-  std::cerr << "count = " << ++count << std::endl;
-  if (count > 10) {
-    std::vector<int> a;
-    std::cerr << "this should raise an exception: " << a.back() << std::endl;
-  }
-
   if (IsGoalBehindOfEgoInSameRouteSegment()) {
     RCLCPP_WARN_THROTTLE(
       getLogger(), *clock_, 5000, "Start plan for a backward goal is not supported now");

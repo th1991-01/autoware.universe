@@ -51,6 +51,7 @@
 #include <lanelet2_extension/visualization/visualization.hpp>
 #include <pcl_ros/transforms.hpp>
 
+#include <glog/logging.h>
 #include <lanelet2_core/geometry/Polygon.h>
 #include <tf2/utils.h>
 #ifdef ROS_DISTRO_GALACTIC
@@ -160,6 +161,9 @@ pcl::PointCloud<pcl::PointXYZ> getTransformedPointCloud(
 CostmapGenerator::CostmapGenerator(const rclcpp::NodeOptions & node_options)
 : Node("costmap_generator", node_options), tf_buffer_(this->get_clock()), tf_listener_(tf_buffer_)
 {
+  google::InitGoogleLogging("costmap_generator");
+  google::InstallFailureSignalHandler();
+
   // Parameters
   costmap_frame_ = this->declare_parameter<std::string>("costmap_frame");
   vehicle_frame_ = this->declare_parameter<std::string>("vehicle_frame");

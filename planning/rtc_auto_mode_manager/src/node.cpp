@@ -14,6 +14,8 @@
 
 #include "rtc_auto_mode_manager/node.hpp"
 
+#include <glog/logging.h>
+
 #include <algorithm>
 
 namespace rtc_auto_mode_manager
@@ -22,6 +24,9 @@ namespace rtc_auto_mode_manager
 RTCAutoModeManagerNode::RTCAutoModeManagerNode(const rclcpp::NodeOptions & node_options)
 : Node("rtc_auto_mode_manager_node", node_options)
 {
+  google::InitGoogleLogging("rtc_auto_mode_manager_node");
+  google::InstallFailureSignalHandler();
+
   const std::vector<std::string> module_list =
     declare_parameter<std::vector<std::string>>("module_list");
   const std::vector<std::string> default_enable_list =

@@ -17,6 +17,7 @@ ament_auto_add_library(${PROJECT_NAME}_component SHARED
   src/mission_planner/mission_planner.cpp
   src/mission_planner/arrival_checker.cpp
 )
+target_link_libraries(${PROJECT_NAME}_component glog)
 
 rclcpp_components_register_node(${PROJECT_NAME}_component
   PLUGIN "mission_planner::MissionPlanner"

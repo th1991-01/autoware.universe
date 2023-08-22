@@ -23,6 +23,8 @@
 #include "sampler_common/constraints/hard_constraint.hpp"
 #include "sampler_common/constraints/soft_constraint.hpp"
 
+#include <glog/logging.h>
+
 #include <chrono>
 #include <limits>
 
@@ -59,6 +61,9 @@ PathSampler::PathSampler(const rclcpp::NodeOptions & node_options)
   vehicle_info_(vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo()),
   time_keeper_ptr_(std::make_shared<TimeKeeper>())
 {
+  google::InitGoogleLogging("path_sampler");
+  google::InstallFailureSignalHandler();
+
   // interface publisher
   traj_pub_ = create_publisher<Trajectory>("~/output/path", 1);
   virtual_wall_pub_ = create_publisher<MarkerArray>("~/virtual_wall", 1);

@@ -38,6 +38,7 @@ ament_auto_add_library(motion_velocity_smoother_node SHARED
 
 target_link_libraries(motion_velocity_smoother_node
   smoother
+  glog
 )
 
 rclcpp_components_register_node(motion_velocity_smoother_node

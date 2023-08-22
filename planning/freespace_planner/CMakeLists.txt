@@ -7,6 +7,7 @@ autoware_package()
 ament_auto_add_library(freespace_planner_node SHARED
   src/freespace_planner/freespace_planner_node.cpp
 )
+target_link_libraries(freespace_planner_node glog)
 
 rclcpp_components_register_node(freespace_planner_node
   PLUGIN "freespace_planner::FreespacePlannerNode"

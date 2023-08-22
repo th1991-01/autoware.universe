@@ -7,6 +7,7 @@ autoware_package()
 ament_auto_add_library(path_sampler SHARED
   DIRECTORY src
 )
+target_link_libraries(path_sampler glog)
 
 # register node
 rclcpp_components_register_node(path_sampler

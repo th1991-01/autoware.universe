@@ -24,6 +24,7 @@
   <depend>component_interface_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>
+  <depend>libgoogle-glog-dev</depend>
   <depend>motion_utils</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>

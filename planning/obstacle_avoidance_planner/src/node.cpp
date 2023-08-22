@@ -20,6 +20,8 @@
 #include "obstacle_avoidance_planner/utils/trajectory_utils.hpp"
 #include "rclcpp/time.hpp"
 
+#include <glog/logging.h>
+
 #include <chrono>
 #include <limits>
 
@@ -78,6 +80,9 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner(const rclcpp::NodeOptions & n
   debug_data_ptr_(std::make_shared<DebugData>()),
   time_keeper_ptr_(std::make_shared<TimeKeeper>())
 {
+  google::InitGoogleLogging("obstacle_avoidance_planner");
+  google::InstallFailureSignalHandler();
+
   // interface publisher
   traj_pub_ = create_publisher<Trajectory>("~/output/path", 1);
   virtual_wall_pub_ = create_publisher<MarkerArray>("~/virtual_wall", 1);

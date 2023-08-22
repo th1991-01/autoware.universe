@@ -23,6 +23,7 @@ ament_auto_add_library(costmap_generator_lib SHARED
 target_link_libraries(costmap_generator_lib
   ${PCL_LIBRARIES}
   FLANN::FLANN
+  glog
 )
 
 if(${PCL_VERSION} GREATER_EQUAL 1.12.1)

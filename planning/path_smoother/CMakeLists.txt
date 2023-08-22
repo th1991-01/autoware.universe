@@ -9,6 +9,7 @@ find_package(Eigen3 REQUIRED)
 ament_auto_add_library(path_smoother SHARED
   DIRECTORY src
 )
+target_link_libraries(path_smoother glog)
 
 target_include_directories(path_smoother
   SYSTEM PUBLIC
