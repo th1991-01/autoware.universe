@@ -24,6 +24,8 @@
 
 #include <tier4_planning_msgs/msg/path_change_module_id.hpp>
 
+#include <glog/logging.h>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -51,6 +53,9 @@ using vehicle_info_util::VehicleInfoUtil;
 BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & node_options)
 : Node("behavior_path_planner", node_options)
 {
+  google::InitGoogleLogging("behavior_path_planner");
+  google::InstallFailureSignalHandler();
+
   using std::placeholders::_1;
   using std::chrono_literals::operator""ms;
 
