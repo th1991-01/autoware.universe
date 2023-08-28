@@ -65,7 +65,7 @@ std::optional<std::pair<double, double>> object_time_to_range(
     object.kinematics.initial_pose_with_covariance.pose.position.y);
   if (!object_is_incoming(object_point, route_handler, range.lane)) return {};
 
-  const auto max_deviation = object.shape.dimensions.y * 2.0;
+  const auto max_deviation = object.shape.dimensions.y + range.inside_distance;
 
   auto worst_enter_time = std::optional<double>();
   auto worst_exit_time = std::optional<double>();
