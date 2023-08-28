@@ -55,7 +55,7 @@ bool object_is_incoming(
 
 std::optional<std::pair<double, double>> object_time_to_range(
   const autoware_auto_perception_msgs::msg::PredictedObject & object, const OverlapRange & range,
-  const std::shared_ptr<route_handler::RouteHandler> route_handler, const double min_confidence,
+  const std::shared_ptr<route_handler::RouteHandler> route_handler,
   const rclcpp::Logger & logger)
 {
   // skip the dynamic object if it is not in a lane preceding the overlapped lane
@@ -299,7 +299,7 @@ bool should_not_enter(
     const auto enter_exit_time =
       params.objects_use_predicted_paths
         ? object_time_to_range(
-            object, range, inputs.route_handler, params.objects_min_confidence, logger)
+            object, range, inputs.route_handler, logger)
         : object_time_to_range(object, range, inputs, logger);
     if (!enter_exit_time) {
       RCLCPP_DEBUG(logger, " SKIP (no enter/exit times found)\n");

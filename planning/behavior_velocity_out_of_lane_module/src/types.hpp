@@ -43,9 +43,10 @@ struct PlannerParam
   double intervals_obj_buffer;  // [s](mode="intervals") buffer to extend the objects time range
   double ttc_threshold;  // [s](mode="ttc") threshold on time to collision between ego and an object
 
-  bool objects_use_predicted_paths;  //  # whether to use the objects' predicted paths
-  double objects_min_vel;            //  # [m/s] objects lower than this velocity will be ignored
-  double objects_min_confidence;     //  # minimum confidence to consider a predicted path
+  bool objects_use_predicted_paths;  // whether to use the objects' predicted paths
+  double objects_min_vel;            // [m/s] objects lower than this velocity will be ignored
+  double objects_min_confidence;     // minimum confidence to consider a predicted path
+  double objects_min_existence_probability;  // minimum exsitence probability to consider a dynamic object
 
   double overlap_extra_length;  // [m] extra length to add around an overlap range
   double overlap_min_dist;      // [m] min distance inside another lane to consider an overlap
