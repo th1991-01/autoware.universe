@@ -104,7 +104,7 @@ bool OutOfLaneModule::modifyPathVelocity(
   DecisionInputs inputs;
   inputs.ranges = ranges;
   inputs.ego_data = ego_data;
-  inputs.objects = filter_predicted_objects(*planner_data_->predicted_objects, params_);
+  inputs.objects = filter_predicted_objects(*planner_data_->predicted_objects, ego_data, params_);
   inputs.route_handler = planner_data_->route_handler_;
   inputs.lanelets = other_lanelets;
   auto decisions = calculate_decisions(inputs, params_, logger_);

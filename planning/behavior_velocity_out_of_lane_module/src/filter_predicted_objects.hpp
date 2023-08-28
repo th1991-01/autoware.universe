@@ -23,10 +23,11 @@ namespace behavior_velocity_planner::out_of_lane
 {
 /// @brief filter predicted objects and their predicted paths
 /// @param [in] objects predicted objects to filter
+/// @param [in] ego_data ego data
 /// @param [in] params parameters
 /// @return filtered predicted objects
  autoware_auto_perception_msgs::msg::PredictedObjects filter_predicted_objects(
-  const autoware_auto_perception_msgs::msg::PredictedObjects & objects, const PlannerParam & params) {
+  const autoware_auto_perception_msgs::msg::PredictedObjects & objects, const EgoData & ego_data, const PlannerParam & params) {
   autoware_auto_perception_msgs::msg::PredictedObjects filtered_objects;  
   filtered_objects.header = objects.header;
   for(const auto & object : objects.objects) {
@@ -39,13 +40,19 @@ namespace behavior_velocity_planner::out_of_lane
     if(is_pedestrian || has_low_exist_probability) continue;
 
     auto filtered_object = object;
+    const auto is_invalid_predicted_path =
+        [&](const auto & predicted_path) {
+          const auto is_low_confidence = predicted_path.confidence < params.objects_min_confidence;
+          const auto lat_offset_to_current_ego =
+            motion_utils::calcLateralOffset(predicted_path.path, ego_data.pose.position);
+          const auto is_crossing_ego = lat_offset_to_current_ego <= object.shape.dimensions.y / 2.0 +
+            std::max(params.left_offset + params.extra_left_offset, params.right_offset + params.extra_right_offset);
+          return is_low_confidence || is_crossing_ego;
+        };
     if(params.objects_use_predicted_paths) {
       auto & predicted_paths = filtered_object.kinematics.predicted_paths;
       const auto new_end = std::remove_if(
-        predicted_paths.begin(), predicted_paths.end(),
-        [&](const auto & predicted_path) {
-          return predicted_path.confidence < params.objects_min_confidence;
-        }
+        predicted_paths.begin(), predicted_paths.end(), is_invalid_predicted_path
       );
       predicted_paths.erase(new_end, predicted_paths.end());
     }
