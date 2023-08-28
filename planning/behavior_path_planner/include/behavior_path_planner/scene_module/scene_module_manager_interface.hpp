@@ -201,6 +201,8 @@ public:
 
   bool canLaunchNewModule() const { return registered_modules_.size() < max_module_num_; }
 
+  virtual bool isAlwaysExecutableModule() const { return false; }
+
   virtual bool isSimultaneousExecutableAsApprovedModule() const
   {
     return enable_simultaneous_execution_as_approved_module_;

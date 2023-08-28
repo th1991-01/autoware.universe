@@ -192,7 +192,12 @@ std::vector<SceneModulePtr> PlannerManager::getRequestModules(
       std::find_if(approved_module_ptrs_.begin(), approved_module_ptrs_.end(), find_block_module);
 
     if (itr != approved_module_ptrs_.end()) {
-      return {};
+      const bool has_always_executable_approved_module = std::any_of(
+        approved_module_ptrs_.begin(), approved_module_ptrs_.end(),
+        [this](const auto & m) { return getManager(m)->isAlwaysExecutableModule(); });
+      if (!has_always_executable_approved_module) {
+        return {};
+      }
     }
   }
 
@@ -204,10 +209,18 @@ std::vector<SceneModulePtr> PlannerManager::getRequestModules(
     stop_watch_.tic(manager_ptr->getModuleName());
 
     /**
-     * don't launch candidate module if approved modules already exist.
+     * don't launch candidate module if there are already approved modules
+     * that are NOT marked as "always executable."
      */
-    if (!approved_module_ptrs_.empty()) {
-      if (!manager_ptr->isSimultaneousExecutableAsApprovedModule()) {
+    const bool has_non_always_executable_approved_module = std::any_of(
+      approved_module_ptrs_.begin(), approved_module_ptrs_.end(),
+      [this](const auto & m) { return !getManager(m)->isAlwaysExecutableModule(); });
+    if (has_non_always_executable_approved_module) {
+      // skip if this manager's module cannot execute simultaneously with
+      // approved modules and it is not an "always executable" module.
+      if (
+        !manager_ptr->isSimultaneousExecutableAsApprovedModule() &&
+        !manager_ptr->isAlwaysExecutableModule()) {
         toc(manager_ptr->getModuleName());
         continue;
       }
