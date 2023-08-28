@@ -48,6 +48,7 @@ double distance_along_path(const EgoData & ego_data, const size_t target_idx);
 /// @brief estimate the time when ego will reach some target path index
 /// @param [in] ego_data data related to the ego vehicle
 /// @param [in] target_idx target ego path index
+/// @param [in] min_velocity minimum ego velocity used to estimate the time
 /// @return time taken by ego to reach the target [s]
 double time_along_path(const EgoData & ego_data, const size_t target_idx);
 /// @brief use an object's predicted paths to estimate the times it will reach the enter and exit

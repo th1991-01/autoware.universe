@@ -30,11 +30,11 @@ double distance_along_path(const EgoData & ego_data, const size_t target_idx)
     ego_data.path->points, ego_data.pose.position, ego_data.first_path_idx + target_idx);
 }
 
-double time_along_path(const EgoData & ego_data, const size_t target_idx)
+double time_along_path(const EgoData & ego_data, const size_t target_idx, const double min_velocity)
 {
   const auto dist = distance_along_path(ego_data, target_idx);
   const auto v = std::max(
-    ego_data.velocity,
+    std::max(ego_data.velocity, min_velocity),
     ego_data.path->points[ego_data.first_path_idx + target_idx].point.longitudinal_velocity_mps *
       0.5);
   return dist / v;
@@ -281,8 +281,8 @@ bool should_not_enter(
   const rclcpp::Logger & logger)
 {
   RangeTimes range_times{};
-  range_times.ego.enter_time = time_along_path(inputs.ego_data, range.entering_path_idx);
-  range_times.ego.exit_time = time_along_path(inputs.ego_data, range.exiting_path_idx);
+  range_times.ego.enter_time = time_along_path(inputs.ego_data, range.entering_path_idx, params.ego_min_velocity);
+  range_times.ego.exit_time = time_along_path(inputs.ego_data, range.exiting_path_idx, params.ego_min_velocity);
   RCLCPP_DEBUG(
     logger, "\t[%lu -> %lu] %ld | ego enters at %2.2f, exits at %2.2f\n", range.entering_path_idx,
     range.exiting_path_idx, range.lane.id(), range_times.ego.enter_time, range_times.ego.exit_time);
