@@ -44,7 +44,7 @@ namespace behavior_velocity_planner::out_of_lane
         [&](const auto & predicted_path) {
           const auto is_low_confidence = predicted_path.confidence < params.objects_min_confidence;
           const auto lat_offset_to_current_ego =
-            motion_utils::calcLateralOffset(predicted_path.path, ego_data.pose.position);
+            std::abs(motion_utils::calcLateralOffset(predicted_path.path, ego_data.pose.position));
           const auto is_crossing_ego = lat_offset_to_current_ego <= object.shape.dimensions.y / 2.0 +
             std::max(params.left_offset + params.extra_left_offset, params.right_offset + params.extra_right_offset);
           return is_low_confidence || is_crossing_ego;
