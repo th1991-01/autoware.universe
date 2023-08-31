@@ -56,8 +56,8 @@ enum TYPE {
 
 namespace pure_pursuit
 {
-PurePursuitLateralController::PurePursuitLateralController(rclcpp::Node & node)
-: node_{&node}, tf_buffer_(node_->get_clock()), tf_listener_(tf_buffer_)
+PurePursuitLateralController::PurePursuitLateralController(rclcpp::Node * node_shared_ptr)
+: node_{node_shared_ptr}, tf_buffer_(node_->get_clock()), tf_listener_(tf_buffer_)
 {
   pure_pursuit_ = std::make_unique<PurePursuit>();
 

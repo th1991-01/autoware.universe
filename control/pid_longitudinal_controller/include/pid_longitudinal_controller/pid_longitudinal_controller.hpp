@@ -56,7 +56,7 @@ namespace trajectory_follower = ::autoware::motion::control::trajectory_follower
 class PidLongitudinalController : public trajectory_follower::LongitudinalControllerBase
 {
 public:
-  explicit PidLongitudinalController(rclcpp::Node & node);
+  explicit PidLongitudinalController(rclcpp::Node * node);
 
 private:
   struct Motion

@@ -26,8 +26,8 @@
 
 namespace autoware::motion::control::pid_longitudinal_controller
 {
-PidLongitudinalController::PidLongitudinalController(rclcpp::Node & node)
-: node_{&node}, diagnostic_updater_(&node)
+PidLongitudinalController::PidLongitudinalController(rclcpp::Node * node)
+: node_{node}, diagnostic_updater_(node)
 {
   using std::placeholders::_1;
 

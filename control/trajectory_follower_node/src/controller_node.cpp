@@ -38,11 +38,11 @@ Controller::Controller(const rclcpp::NodeOptions & node_options) : Node("control
     getLateralControllerMode(declare_parameter<std::string>("lateral_controller_mode"));
   switch (lateral_controller_mode) {
     case LateralControllerMode::MPC: {
-      lateral_controller_ = std::make_shared<mpc_lateral_controller::MpcLateralController>(*this);
+      lateral_controller_ = std::make_shared<mpc_lateral_controller::MpcLateralController>(this);
       break;
     }
     case LateralControllerMode::PURE_PURSUIT: {
-      lateral_controller_ = std::make_shared<pure_pursuit::PurePursuitLateralController>(*this);
+      lateral_controller_ = std::make_shared<pure_pursuit::PurePursuitLateralController>(this);
       break;
     }
     default:
@@ -54,7 +54,7 @@ Controller::Controller(const rclcpp::NodeOptions & node_options) : Node("control
   switch (longitudinal_controller_mode) {
     case LongitudinalControllerMode::PID: {
       longitudinal_controller_ =
-        std::make_shared<pid_longitudinal_controller::PidLongitudinalController>(*this);
+        std::make_shared<pid_longitudinal_controller::PidLongitudinalController>(this);
       break;
     }
     default:
