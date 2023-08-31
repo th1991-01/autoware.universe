@@ -308,6 +308,13 @@ bool GoalPlannerModule::isExecutionRequested() const
     return false;
   });
 
+  // if goal modification is not allowed
+  // 1) goal_pose is in current_lanes, plan path to the original fixed goal
+  // 2) goal_pose is NOT in current_lanes, do not execute goal_planner
+  if (!goal_planner_utils::isAllowedGoalModification(route_handler, left_side_parking_)) {
+    return goal_is_in_current_lanes;
+  }
+
   // if goal is not in current_lanes and current_shoulder_lanes, do not execute goal_planner,
   // because goal arc coordinates cannot be calculated.
   if (!goal_is_in_current_lanes && !goal_is_in_current_shoulder_lanes) {
@@ -324,13 +331,6 @@ bool GoalPlannerModule::isExecutionRequested() const
   if (self_to_goal_arc_length < 0.0 || self_to_goal_arc_length > request_length) {
     // if current position is far from goal or behind goal, do not execute goal_planner
     return false;
-  }
-
-  // if goal modification is not allowed
-  // 1) goal_pose is in current_lanes, plan path to the original fixed goal
-  // 2) goal_pose is NOT in current_lanes, do not execute goal_planner
-  if (!goal_planner_utils::isAllowedGoalModification(route_handler, left_side_parking_)) {
-    return goal_is_in_current_lanes;
   }
 
   // if (A) or (B) is met execute pull over
