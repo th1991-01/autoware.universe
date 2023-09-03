@@ -42,12 +42,57 @@ boost::optional<double> calcFeasibleDecelDistance(
   return min_stop_distance;
 }
 
+void modifyVelocityByDirection(
+  std::vector<PathWithLaneId> & paths,
+  std::vector<std::pair<double, double>> & terminal_vel_acc_pairs, const double target_velocity,
+  const double acceleration)
+{
+  assert(paths.size() == terminal_vel_acc_pairs.size());
+
+  auto path_itr = std::begin(paths);
+  auto pair_itr = std::begin(terminal_vel_acc_pairs);
+
+  for (; path_itr != std::end(paths); ++path_itr, ++pair_itr) {
+    const auto is_driving_forward = motion_utils::isDrivingForward(path_itr->points);
+
+    // If the number of points in the path is less than 2, don't insert stop velocity and
+    // set pairs_terminal_velocity_and_accel to 0
+    if (!is_driving_forward) {
+      *pair_itr = std::make_pair(0.0, 0.0);
+      continue;
+    }
+
+    if (*is_driving_forward) {
+      for (auto & point : path_itr->points) {
+        // TODO(Sugahara): velocity calculation can be improved by considering the acceleration
+        point.point.longitudinal_velocity_mps = std::abs(point.point.longitudinal_velocity_mps);
+      }
+      // TODO(Sugahara): Consider the calculation of the target velocity and acceleration for ego's
+      // predicted path when ego will stop at the end of the path
+      *pair_itr = std::make_pair(target_velocity, acceleration);
+    } else {
+      for (auto & point : path_itr->points) {
+        point.point.longitudinal_velocity_mps = -std::abs(point.point.longitudinal_velocity_mps);
+      }
+      *pair_itr = std::make_pair(-target_velocity, -acceleration);
+    }
+    path_itr->points.back().point.longitudinal_velocity_mps = 0.0;
+  }
+}
+
 void updateEgoPredictedPathParams(
   std::shared_ptr<EgoPredictedPathParams> & ego_predicted_path_params,
   const std::shared_ptr<StartPlannerParameters> & start_planner_params)
 {
   ego_predicted_path_params =
     std::make_shared<EgoPredictedPathParams>(start_planner_params->ego_predicted_path_params);
+}
+void updateEgoPredictedPathParams(
+  std::shared_ptr<EgoPredictedPathParams> & ego_predicted_path_params,
+  const std::shared_ptr<GoalPlannerParameters> & goal_planner_params)
+{
+  ego_predicted_path_params =
+    std::make_shared<EgoPredictedPathParams>(goal_planner_params->ego_predicted_path_params);
 }
 
 void updateSafetyCheckParams(
@@ -58,12 +103,28 @@ void updateSafetyCheckParams(
     std::make_shared<SafetyCheckParams>(start_planner_params->safety_check_params);
 }
 
+void updateSafetyCheckParams(
+  std::shared_ptr<SafetyCheckParams> & safety_check_params,
+  const std::shared_ptr<GoalPlannerParameters> & goal_planner_params)
+{
+  safety_check_params =
+    std::make_shared<SafetyCheckParams>(goal_planner_params->safety_check_params);
+}
+
 void updateObjectsFilteringParams(
   std::shared_ptr<ObjectsFilteringParams> & objects_filtering_params,
   const std::shared_ptr<StartPlannerParameters> & start_planner_params)
 {
   objects_filtering_params =
     std::make_shared<ObjectsFilteringParams>(start_planner_params->objects_filtering_params);
+}
+
+void updateObjectsFilteringParams(
+  std::shared_ptr<ObjectsFilteringParams> & objects_filtering_params,
+  const std::shared_ptr<GoalPlannerParameters> & goal_planner_params)
+{
+  objects_filtering_params =
+    std::make_shared<ObjectsFilteringParams>(goal_planner_params->objects_filtering_params);
 }
 
 void updatePathProperty(
@@ -75,13 +136,13 @@ void updatePathProperty(
 }
 
 std::pair<double, double> getPairsTerminalVelocityAndAccel(
-  const PullOutPath & pull_out_path, const size_t current_path_idx)
+  const std::vector<std::pair<double, double>> & pairs_terminal_velocity_and_accel,
+  const size_t current_path_idx)
 {
-  if (pull_out_path.pairs_terminal_velocity_and_accel.size() <= current_path_idx) {
-    std::cerr << "pair_terminal_velocity_and_accel is not given" << std::endl;
+  if (pairs_terminal_velocity_and_accel.size() <= current_path_idx) {
     return std::make_pair(0.0, 0.0);
   }
-  return pull_out_path.pairs_terminal_velocity_and_accel.at(current_path_idx);
+  return pairs_terminal_velocity_and_accel.at(current_path_idx);
 }
 
 PathWithLaneId removeInverseOrderPathPoints(const PathWithLaneId & path)

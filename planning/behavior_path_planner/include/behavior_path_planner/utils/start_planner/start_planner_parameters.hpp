@@ -79,8 +79,11 @@ struct StartPlannerParameters
   RRTStarParam rrt_star_parameters;
 
   // stop condition
-  double maximum_deceleration;
-  double maximum_jerk;
+  double maximum_deceleration_for_stop;
+  double maximum_jerk_for_stop;
+
+  // hysteresis parameter
+  double hysteresis_factor_expand_rate;
 
   // path safety checker
   utils::path_safety_checker::EgoPredictedPathParams ego_predicted_path_params;
