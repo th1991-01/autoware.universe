@@ -125,10 +125,8 @@ MissionPlanner::MissionPlanner(const rclcpp::NodeOptions & options)
     std::chrono::milliseconds(100), std::bind(&MissionPlanner::checkInitialization, this));
 }
 
-void MissionPlanner::checkInitialization() {
-
-  RCLCPP_ERROR(get_logger(), "tmp: checkInitialization is called.");
-
+void MissionPlanner::checkInitialization()
+{
   if (state_.state != RouteState::Message::UNKNOWN) {
     return;  // Already initialized
   }
@@ -143,7 +141,6 @@ void MissionPlanner::checkInitialization() {
   }
 
   // All data is ready. Now API is available.
-  RCLCPP_ERROR(get_logger(), "tmp: All data is ready. Now API is available.");
   change_state(RouteState::Message::UNSET);
   data_check_timer_->cancel();  // stop timer callback
 }
