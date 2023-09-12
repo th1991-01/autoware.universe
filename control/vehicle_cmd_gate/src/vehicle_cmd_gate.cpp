@@ -417,12 +417,14 @@ void VehicleCmdGate::publishControlCommands(const Commands & commands)
 
   // Check engage
   if (!is_engaged_) {
+    RCLCPP_INFO(get_logger(), "is_engaged_ is false. Set stop command");
     filtered_commands.control = createStopControlCmd();
   }
 
   // Check pause. Place this check after all other checks as it needs the final output.
   adapi_pause_->update(filtered_commands.control);
   if (adapi_pause_->is_paused()) {
+    RCLCPP_INFO(get_logger(), "is_paused is true. Set stop command");
     filtered_commands.control = createStopControlCmd();
   }
 
@@ -623,12 +625,14 @@ void VehicleCmdGate::onGateMode(GateMode::ConstSharedPtr msg)
 
 void VehicleCmdGate::onEngage(EngageMsg::ConstSharedPtr msg)
 {
+  RCLCPP_WARN(get_logger(), "engage topic is called: %d -> %d", is_engaged_, msg->engage);
   is_engaged_ = msg->engage;
 }
 
 void VehicleCmdGate::onEngageService(
   const EngageSrv::Request::SharedPtr request, const EngageSrv::Response::SharedPtr response)
 {
+  RCLCPP_WARN(get_logger(), "engage service is called: %d -> %d", is_engaged_, request->engage);
   is_engaged_ = request->engage;
   response->status = tier4_api_utils::response_success();
 }

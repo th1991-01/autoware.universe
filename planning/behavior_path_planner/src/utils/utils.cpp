@@ -2854,6 +2854,8 @@ BehaviorModuleOutput getReferencePath(
   const size_t current_seg_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
     reference_path.points, no_shift_pose, p.ego_nearest_dist_threshold,
     p.ego_nearest_yaw_threshold);
+  // std::cerr << "reference_path.point.size () = " << reference_path.points.size() << ",
+  // current_seg_idx = " << current_seg_idx << std::endl;
   reference_path.points = motion_utils::cropPoints(
     reference_path.points, no_shift_pose.position, current_seg_idx, p.forward_path_length,
     p.backward_path_length + p.input_path_interval);

@@ -61,6 +61,7 @@ void AdapiPauseInterface::update(const AckermannControlCommand & control)
 void AdapiPauseInterface::on_pause(
   const SetPause::Service::Request::SharedPtr req, const SetPause::Service::Response::SharedPtr res)
 {
+  RCLCPP_WARN(node_->get_logger(), "pause api is called: is_paused_: %d -> %d", is_paused_, req->pause);
   is_paused_ = req->pause;
   res->status.success = true;
 }

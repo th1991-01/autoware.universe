@@ -384,6 +384,13 @@ private:
   void updateDebugVelAcc(
     const Motion & ctrl_cmd, const geometry_msgs::msg::Pose & current_pose,
     const ControlData & control_data);
+
+  //!< @brief logging with warn and return false
+  template <typename... Args>
+  inline void infoThrottle(Args &&... args) const
+  {
+    RCLCPP_INFO_THROTTLE(logger_, *clock_, 5000, args...);
+  }
 };
 }  // namespace autoware::motion::control::pid_longitudinal_controller
 

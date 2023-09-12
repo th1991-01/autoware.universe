@@ -12,6 +12,7 @@ ament_auto_add_library(tier4_autoware_utils SHARED
   src/math/sin_table.cpp
   src/math/trigonometry.cpp
   src/ros/msg_operation.cpp
+  src/system/backtrace.cpp
 )
 
 if(BUILD_TESTING)

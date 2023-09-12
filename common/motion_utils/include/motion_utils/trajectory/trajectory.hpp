@@ -291,6 +291,7 @@ boost::optional<size_t> findNearestIndex(
   return is_nearest_found ? boost::optional<size_t>(min_idx) : boost::none;
 }
 
+
 /**
  * @brief calculate longitudinal offset (length along trajectory from seg_idx point to nearest point
  * to p_target on trajectory). If seg_idx point is after that nearest point, length is negative.
@@ -1726,6 +1727,8 @@ T cropPoints(
 
   const size_t modified_target_seg_idx =
     std::min(target_seg_idx, cropped_forward_points.size() - 2);
+  // std::cerr << "cropped_forward_points = " << cropped_forward_points.size() << ",
+  // modified_target_seg_idx = " << modified_target_seg_idx << std::endl;
   const auto cropped_points = cropBackwardPoints(
     cropped_forward_points, target_pos, modified_target_seg_idx, backward_length);
 

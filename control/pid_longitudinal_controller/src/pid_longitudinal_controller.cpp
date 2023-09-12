@@ -527,9 +527,6 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
     return;
   };
 
-  const auto info_throttle = [this](const auto & s) {
-    RCLCPP_INFO_SKIPFIRST_THROTTLE(logger_, *clock_, 5000, "%s", s);
-  };
 
   // if current operation mode is not autonomous mode, then change state to stopped
   if (m_current_operation_mode.mode != OperationModeState::AUTONOMOUS) {
@@ -586,10 +583,16 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
   if (m_control_state == ControlState::STOPPED) {
     // -- debug print --
     if (has_nonzero_target_vel && !departure_condition_from_stopped) {
-      info_throttle("target speed > 0, but departure condition is not met. Keep STOPPED.");
+      infoThrottle(
+        "target speed > 0, but departure condition is not met. Keep STOPPED. ego_v = %f, stop_dist "
+        "= %f stop_dist threshold to start = %f",
+        current_vel_cmd, stop_dist, p.drive_state_stop_dist);
     }
     if (has_nonzero_target_vel && keep_stopped_condition) {
-      info_throttle("target speed > 0, but keep stop condition is met. Keep STOPPED.");
+      infoThrottle(
+        "target speed > 0, but keep stop condition is met. Keep STOPPED. ego_v = %f, "
+        "is_steer_converged = %d",
+        current_vel_cmd, lateral_sync_data_.is_steer_converged);
     }
     // ---------------
 

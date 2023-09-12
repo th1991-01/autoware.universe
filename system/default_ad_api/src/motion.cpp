@@ -43,20 +43,26 @@ MotionNode::MotionNode(const rclcpp::NodeOptions & options)
 void MotionNode::update_state()
 {
   if (!is_paused_ || !is_start_requested_) {
+    RCLCPP_INFO(get_logger(), "update_state(): no update. is_paused_ = %d, is_start_requested_ = %d", is_paused_, is_start_requested_);
     return;
   }
 
   const auto get_next_state = [this]() {
+    RCLCPP_INFO(get_logger(), "get_next_state(): is_paused_ = %d, is_start_requested_ = %d, require_accept_start_ = %d, stop_check_duration_ = %f", is_paused_.value(), is_start_requested_.value(), require_accept_start_, stop_check_duration_);
     if (is_paused_.value()) {
       if (!is_start_requested_.value()) {
+        RCLCPP_INFO(get_logger(), "get_next_state(): next state = State::Pause");
         return State::Paused;
       } else {
+        RCLCPP_INFO(get_logger(), "get_next_state(): next state = %s", std::string(require_accept_start_ ? "State::Starting" : "State::Resuming"));
         return require_accept_start_ ? State::Starting : State::Resuming;
       }
     } else {
       if (!vehicle_stop_checker_.isVehicleStopped(stop_check_duration_)) {
+        RCLCPP_INFO(get_logger(), "get_next_state(): next state = State::Moving");
         return State::Moving;
       } else {
+        RCLCPP_INFO(get_logger(), "get_next_state(): next state = %s", std::string(is_start_requested_.value() ? "State::Resumed" : "State::Pausing"));
         return is_start_requested_.value() ? State::Resumed : State::Pausing;
       }
     }
@@ -74,12 +80,14 @@ void MotionNode::update_state()
       case State::Pausing:
       case State::Resumed:
       case State::Unknown:
+        RCLCPP_INFO(get_logger(), "update_state(): current state = %u, next_state = %u. do nothing.", state_, next_state);
         return;
     }
   }
 
   // Prevents transition from starting to resuming
   if (state_ == State::Resuming && next_state == State::Starting) {
+    RCLCPP_INFO(get_logger(), "update_state(): current state = Resuming, next_state = Starting. do nothing.");
     return;
   }
 
@@ -88,6 +96,16 @@ void MotionNode::update_state()
 
 void MotionNode::change_state(const State state)
 {
+
+  static const auto str = std::unordered_map<State, std::string>(
+    {{State::Unknown, "State::Unknown"},
+     {State::Pausing, "State::Pausing"},
+     {State::Paused, "State::Paused"},
+     {State::Starting, "State::Starting"},
+     {State::Resuming, "State::Resuming"},
+     {State::Resumed, "State::Resumed"},
+     {State::Moving, "State::Moving"}});
+
   using MotionState = autoware_ad_api::motion::State::Message;
   static const auto mapping = std::unordered_map<State, MotionState::_state_type>(
     {{State::Unknown, MotionState::UNKNOWN},
@@ -99,6 +117,7 @@ void MotionNode::change_state(const State state)
      {State::Moving, MotionState::MOVING}});
 
   if (mapping.at(state_) != mapping.at(state)) {
+    RCLCPP_INFO(get_logger(), "change_state(): UPDATE! current state = %s, next_state = %s.", str.at(state_), str.at(state));
     MotionState msg;
     msg.stamp = now();
     msg.state = mapping.at(state);
@@ -111,9 +130,11 @@ void MotionNode::change_state(const State state)
 void MotionNode::update_pause(const State state)
 {
   if (state == State::Pausing) {
+    RCLCPP_INFO(get_logger(), "update_pause(): state = Pausing. set pause true");
     return change_pause(true);
   }
   if (state == State::Resuming) {
+    RCLCPP_INFO(get_logger(), "update_pause(): state = Resuming. set pause false");
     return change_pause(false);
   }
 }
@@ -135,6 +156,7 @@ void MotionNode::on_timer()
 
 void MotionNode::on_is_paused(const control_interface::IsPaused::Message::ConstSharedPtr msg)
 {
+  RCLCPP_INFO(get_logger(), "on_is_paused is called. is_paused_ = %d", msg->data);
   is_paused_ = msg->data;
   update_state();
 }
@@ -142,6 +164,7 @@ void MotionNode::on_is_paused(const control_interface::IsPaused::Message::ConstS
 void MotionNode::on_is_start_requested(
   const control_interface::IsStartRequested::Message::ConstSharedPtr msg)
 {
+  RCLCPP_INFO(get_logger(), "on_is_start_requested is called. is_start_requested_ = %d", msg->data);
   is_start_requested_ = msg->data;
   update_state();
 }

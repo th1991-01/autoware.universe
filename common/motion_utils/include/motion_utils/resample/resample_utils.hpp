@@ -19,6 +19,7 @@
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/geometry/path_with_lane_id_geometry.hpp>
+#include <tier4_autoware_utils/system/backtrace.hpp>
 
 #include <vector>
 
@@ -81,6 +82,7 @@ bool validate_arguments(const T & input_points, const std::vector<double> & resa
 
   // Check duplication
   if (!validate_points_duplication(input_points)) {
+    tier4_autoware_utils::print_backtrace();
     std::cerr << "input points has some duplicated points" << std::endl;
     return false;
   }
@@ -106,6 +108,7 @@ bool validate_arguments(const T & input_points, const double resampling_interval
 
   // Check duplication
   if (!validate_points_duplication(input_points)) {
+    tier4_autoware_utils::print_backtrace();
     std::cerr << "input points has some duplicated points" << std::endl;
     return false;
   }

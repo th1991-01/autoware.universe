@@ -278,6 +278,8 @@ trajectory_follower::LateralOutput MpcLateralController::run(
     // 3. The steer angle should be converged.
     output.sync_data.is_steer_converged =
       is_mpc_solved && isMpcConverged() && isSteerConverged(cmd);
+    // std::cerr << "is_mpc_solved = " << is_mpc_solved << ", isMpcConverged() = " << isMpcConverged()
+    //           << ", isSteerConverged(cmd) = " << isSteerConverged(cmd) << std::endl;
 
     return output;
   };
@@ -313,6 +315,11 @@ bool MpcLateralController::isSteerConverged(const AckermannLateralCommand & cmd)
   const bool is_converged =
     std::abs(cmd.steering_tire_angle - m_current_steering.steering_tire_angle) <
     static_cast<float>(m_converged_steer_rad);
+
+  // std::cerr << "isMpcConverged: cmd.steering_tire_angle = " << cmd.steering_tire_angle
+  //           << ", m_current_steering.steering_tire_angle = " << m_current_steering.steering_tire_angle
+  //           << ", m_converged_steer_rad = " << m_converged_steer_rad
+  //           << ", is_converged = " << is_converged << std::endl;
 
   return is_converged;
 }
@@ -498,7 +505,12 @@ bool MpcLateralController::isMpcConverged()
       max_steering_value = m_mpc_steering_history.at(i).first.steering_tire_angle;
     }
   }
-  return (max_steering_value - min_steering_value) < m_mpc_converged_threshold_rps;
+  const auto is_converged = (max_steering_value - min_steering_value) < m_mpc_converged_threshold_rps;
+  // std::cerr << "isMpcConverged: max_steering_value = " << max_steering_value
+  //           << ", min_steering_value = " << min_steering_value
+  //           << ", m_mpc_converged_threshold_rps = " << m_mpc_converged_threshold_rps
+  //           << ", is_converged = " << is_converged << std::endl;
+  return is_converged;
 }
 
 void MpcLateralController::declareMPCparameters(rclcpp::Node & node)
