@@ -1168,9 +1168,9 @@ StartPlannerParameters BehaviorPathPlannerNode::getStartPlannerParam()
 
   // stop condition
   {
-    p.maximum_deceleration =
+    p.maximum_deceleration_for_stop =
       declare_parameter<double>(ns + "stop_condition.maximum_deceleration");
-    p.maximum_jerk = declare_parameter<double>(ns + "stop_condition.maximum_jerk");
+    p.maximum_jerk_for_stop = declare_parameter<double>(ns + "stop_condition.maximum_jerk");
   }
 
   std::string base_ns = "start_planner.path_safety_check.";
