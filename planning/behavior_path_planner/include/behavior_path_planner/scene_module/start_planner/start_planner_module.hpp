@@ -18,7 +18,6 @@
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/utils/geometric_parallel_parking/geometric_parallel_parking.hpp"
 #include "behavior_path_planner/utils/path_safety_checker/path_safety_checker_parameters.hpp"
-#include "behavior_path_planner/utils/path_safety_checker/safety_check.hpp"
 #include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
 #include "behavior_path_planner/utils/start_goal_planner_common/common_module_data.hpp"
 #include "behavior_path_planner/utils/start_planner/freespace_pull_out.hpp"
@@ -175,8 +174,8 @@ private:
   bool isStuck();
   bool hasFinishedCurrentPath();
   void updateSafetyCheckTargetObjectsData(
-    const PredictedObjects & filtered_objects,
-    const TargetObjectsOnLane & target_objects_on_lane) const;
+    const PredictedObjects & filtered_objects, const TargetObjectsOnLane & target_objects_on_lane,
+    const std::vector<PoseWithVelocityStamped> & ego_predicted_path) const;
   bool isSafePath() const;
   void setDrivableAreaInfo(BehaviorModuleOutput & output) const;
 
