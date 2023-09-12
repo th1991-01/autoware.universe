@@ -885,9 +885,12 @@ GoalPlannerParameters BehaviorPathPlannerNode::getGoalPlannerParam()
   // occupancy grid map
   {
     std::string ns = "goal_planner.occupancy_grid.";
-    p.use_occupancy_grid = declare_parameter<bool>(ns + "use_occupancy_grid");
-    p.use_occupancy_grid_for_longitudinal_margin =
-      declare_parameter<bool>(ns + "use_occupancy_grid_for_longitudinal_margin");
+    p.use_occupancy_grid_for_goal_search =
+      declare_parameter<bool>(ns + "use_occupancy_grid_for_goal_search");
+    p.use_occupancy_grid_for_path_collision_check =
+      declare_parameter<bool>(ns + "use_occupancy_grid_for_path_collision_check");
+    p.use_occupancy_grid_for_goal_longitudinal_margin =
+      declare_parameter<bool>(ns + "use_occupancy_grid_for_goal_longitudinal_margin");
     p.occupancy_grid_collision_check_margin =
       declare_parameter<double>(ns + "occupancy_grid_collision_check_margin");
     p.theta_size = declare_parameter<int>(ns + "theta_size");
@@ -902,6 +905,7 @@ GoalPlannerParameters BehaviorPathPlannerNode::getGoalPlannerParam()
       declare_parameter<double>(ns + "object_recognition_collision_check_margin");
     p.object_recognition_collision_check_max_extra_stopping_margin = declare_parameter<double>(
       ns + "object_recognition_collision_check_max_extra_stopping_margin");
+    p.th_moving_object_velocity = declare_parameter<double>(ns + "th_moving_object_velocity");
   }
 
   // pull over general params
