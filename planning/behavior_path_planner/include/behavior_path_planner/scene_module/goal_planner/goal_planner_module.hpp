@@ -63,6 +63,7 @@ using freespace_planning_algorithms::RRTStarParam;
 
 using behavior_path_planner::utils::path_safety_checker::EgoPredictedPathParams;
 using behavior_path_planner::utils::path_safety_checker::ObjectsFilteringParams;
+using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
 using behavior_path_planner::utils::path_safety_checker::SafetyCheckParams;
 using behavior_path_planner::utils::path_safety_checker::TargetObjectsOnLane;
 

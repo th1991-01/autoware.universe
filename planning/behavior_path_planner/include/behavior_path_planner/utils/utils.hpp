@@ -19,10 +19,10 @@
 #include "behavior_path_planner/marker_utils/utils.hpp"
 #include "behavior_path_planner/utils/lane_change/lane_change_module_data.hpp"
 #include "behavior_path_planner/utils/lane_following/module_data.hpp"
+#include "behavior_path_planner/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "behavior_path_planner/utils/start_planner/pull_out_path.hpp"
 #include "motion_utils/motion_utils.hpp"
 #include "perception_utils/predicted_path_utils.hpp"
-
 
 #include <route_handler/route_handler.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
@@ -66,6 +66,12 @@ using autoware_auto_perception_msgs::msg::Shape;
 using autoware_auto_planning_msgs::msg::Path;
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using behavior_path_planner::utils::path_safety_checker::EgoPredictedPathParams;
+using behavior_path_planner::utils::path_safety_checker::ObjectsFilteringParams;
+using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
+using behavior_path_planner::utils::path_safety_checker::PredictedPathWithPolygon;
+using behavior_path_planner::utils::path_safety_checker::SafetyCheckParams;
+using behavior_path_planner::utils::path_safety_checker::TargetObjectsOnLane;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseArray;
@@ -391,7 +397,7 @@ lanelet::ConstLanelets calcLaneAroundPose(
   const double dist_threshold = std::numeric_limits<double>::max(),
   const double yaw_threshold = std::numeric_limits<double>::max());
 
-std::vector<PredictedPathWithPolygon> getPredictedPathFromObj(
+std::vector<utils::path_safety_checker::PredictedPathWithPolygon> getPredictedPathFromObj(
   const ExtendedPredictedObject & obj, const bool & is_use_all_predicted_path);
 
 bool checkPathRelativeAngle(const PathWithLaneId & path, const double angle_threshold);

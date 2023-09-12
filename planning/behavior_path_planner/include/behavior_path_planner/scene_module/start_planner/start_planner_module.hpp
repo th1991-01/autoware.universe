@@ -50,6 +50,7 @@ using behavior_path_planner::utils::path_safety_checker::EgoPredictedPathParams;
 using behavior_path_planner::utils::path_safety_checker::ObjectsFilteringParams;
 using behavior_path_planner::utils::path_safety_checker::SafetyCheckParams;
 using behavior_path_planner::utils::path_safety_checker::TargetObjectsOnLane;
+using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
 using geometry_msgs::msg::PoseArray;
 using lane_departure_checker::LaneDepartureChecker;
 

@@ -28,6 +28,7 @@ namespace behavior_path_planner::utils::path_safety_checker
 using geometry_msgs::msg::Pose;
 using tier4_autoware_utils::Polygon2d;
 
+
 struct PoseWithVelocity
 {
   Pose pose;

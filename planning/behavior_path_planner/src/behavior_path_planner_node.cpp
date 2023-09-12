@@ -1290,8 +1290,9 @@ StartPlannerParameters BehaviorPathPlannerNode::getStartPlannerParam()
   // stop condition
   {
     p.maximum_deceleration_for_stop =
-      declare_parameter<double>(ns + "stop_condition.maximum_deceleration");
-    p.maximum_jerk_for_stop = declare_parameter<double>(ns + "stop_condition.maximum_jerk");
+      declare_parameter<double>(ns + "stop_condition.maximum_deceleration_for_stop");
+    p.maximum_jerk_for_stop =
+      declare_parameter<double>(ns + "stop_condition.maximum_jerk_for_stop");
   }
 
   std::string base_ns = "start_planner.path_safety_check.";
@@ -1401,8 +1402,6 @@ StartPlannerParameters BehaviorPathPlannerNode::getStartPlannerParam()
     p.safety_check_params.rss_params.longitudinal_velocity_delta_time =
       declare_parameter<double>(rss_ns + "longitudinal_velocity_delta_time");
   }
-
-
 
   // validation of parameters
   if (p.lateral_acceleration_sampling_num < 1) {

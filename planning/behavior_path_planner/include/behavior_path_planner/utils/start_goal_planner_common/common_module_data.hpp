@@ -28,6 +28,7 @@ namespace behavior_path_planner
 {
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using behavior_path_planner::utils::path_safety_checker::TargetObjectsOnLane;
+using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
 /*
  * Common data for start/goal_planner module
  */

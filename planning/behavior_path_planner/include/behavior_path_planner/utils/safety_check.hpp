@@ -17,7 +17,7 @@
 
 #include "behavior_path_planner/data_manager.hpp"
 #include "behavior_path_planner/marker_utils/utils.hpp"
-#include "behavior_path_planner/utils/lane_change/lane_change_module_data.hpp"
+#include "behavior_path_planner/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
@@ -49,6 +49,10 @@ using marker_utils::CollisionCheckDebug;
 using tier4_autoware_utils::Point2d;
 using tier4_autoware_utils::Polygon2d;
 using vehicle_info_util::VehicleInfo;
+using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
+using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityAndPolygonStamped;
+using behavior_path_planner::utils::path_safety_checker::PredictedPathWithPolygon;
+using behavior_path_planner::utils::path_safety_checker::ExtendedPredictedObject;
 
 namespace bg = boost::geometry;
 

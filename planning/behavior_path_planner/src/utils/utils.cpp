@@ -1308,7 +1308,6 @@ std::vector<DrivableLanes> cutOverlappedLanes(
   return shorten_lanes;
 }
 
-
 geometry_msgs::msg::Point calcLongitudinalOffsetStartPoint(
   const std::vector<geometry_msgs::msg::Point> & points, const geometry_msgs::msg::Pose & pose,
   const size_t nearest_segment_idx, const double offset)
