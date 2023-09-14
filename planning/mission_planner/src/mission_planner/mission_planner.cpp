@@ -119,7 +119,30 @@ MissionPlanner::MissionPlanner(const rclcpp::NodeOptions & options)
   adaptor.init_srv(srv_clear_mrm_route_, this, &MissionPlanner::on_clear_mrm_route);
   adaptor.init_sub(sub_modified_goal_, this, &MissionPlanner::on_modified_goal);
 
+  change_state(RouteState::Message::UNKNOWN);  // TODO(): should be initialized with UNINITIALIZED
+
+  data_check_timer_ = create_wall_timer(
+    std::chrono::milliseconds(100), std::bind(&MissionPlanner::checkInitialization, this));
+}
+
+void MissionPlanner::checkInitialization()
+{
+  if (state_.state != RouteState::Message::UNKNOWN) {
+    return;  // Already initialized
+  }
+
+  if (!planner_->ready()) {
+    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000, "waiting lanelet map...");
+    return;
+  }
+  if (!odometry_) {
+    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000, "waiting odometry...");
+    return;
+  }
+
+  // All data is ready. Now API is available.
   change_state(RouteState::Message::UNSET);
+  data_check_timer_->cancel();  // stop timer callback
 }
 
 void MissionPlanner::on_odometry(const Odometry::ConstSharedPtr msg)
@@ -290,6 +313,11 @@ void MissionPlanner::change_state(RouteState::Message::_state_type state)
 void MissionPlanner::on_clear_route(
   const ClearRoute::Service::Request::SharedPtr, const ClearRoute::Service::Response::SharedPtr res)
 {
+  if (state_.state == RouteState::Message::UNKNOWN) {  // should be UNINITIALIZED
+    RCLCPP_ERROR(get_logger(), "The planner is not ready.");
+    return;
+  }
+
   clear_route();
   change_state(RouteState::Message::UNSET);
   res->status.success = true;
@@ -301,18 +329,15 @@ void MissionPlanner::on_set_route(
 {
   using ResponseCode = autoware_adapi_v1_msgs::srv::SetRoute::Response;
 
+  if (state_.state == RouteState::Message::UNKNOWN) {  // should be UNINITIALIZED
+    throw component_interface_utils::ServiceException(
+      ResponseCode::ERROR_ROUTE_EXISTS, "The planner is not ready.");
+  }
   if (state_.state != RouteState::Message::UNSET) {
     throw component_interface_utils::ServiceException(
       ResponseCode::ERROR_ROUTE_EXISTS, "The route is already set.");
   }
-  if (!planner_->ready()) {
-    throw component_interface_utils::ServiceException(
-      ResponseCode::ERROR_PLANNER_UNREADY, "The planner is not ready.");
-  }
-  if (!odometry_) {
-    throw component_interface_utils::ServiceException(
-      ResponseCode::ERROR_PLANNER_UNREADY, "The vehicle pose is not received.");
-  }
+
   if (mrm_route_) {
     throw component_interface_utils::ServiceException(
       ResponseCode::ERROR_INVALID_STATE, "Cannot reroute in the emergency state.");
@@ -340,17 +365,13 @@ void MissionPlanner::on_set_route_points(
 {
   using ResponseCode = autoware_adapi_v1_msgs::srv::SetRoutePoints::Response;
 
+  if (state_.state == RouteState::Message::UNKNOWN) {  // should be UNINITIALIZED
+    throw component_interface_utils::ServiceException(
+      ResponseCode::ERROR_ROUTE_EXISTS, "The planner is not ready.");
+  }
   if (state_.state != RouteState::Message::UNSET) {
     throw component_interface_utils::ServiceException(
       ResponseCode::ERROR_ROUTE_EXISTS, "The route is already set.");
-  }
-  if (!planner_->ready()) {
-    throw component_interface_utils::ServiceException(
-      ResponseCode::ERROR_PLANNER_UNREADY, "The planner is not ready.");
-  }
-  if (!odometry_) {
-    throw component_interface_utils::ServiceException(
-      ResponseCode::ERROR_PLANNER_UNREADY, "The vehicle pose is not received.");
   }
   if (mrm_route_) {
     throw component_interface_utils::ServiceException(
@@ -379,13 +400,9 @@ void MissionPlanner::on_set_mrm_route(
 {
   using ResponseCode = autoware_adapi_v1_msgs::srv::SetRoutePoints::Response;
 
-  if (!planner_->ready()) {
+  if (state_.state == RouteState::Message::UNKNOWN) {  // should be UNINITIALIZED
     throw component_interface_utils::ServiceException(
-      ResponseCode::ERROR_PLANNER_UNREADY, "The planner is not ready.");
-  }
-  if (!odometry_) {
-    throw component_interface_utils::ServiceException(
-      ResponseCode::ERROR_PLANNER_UNREADY, "The vehicle pose is not received.");
+      ResponseCode::ERROR_ROUTE_EXISTS, "The planner is not ready.");
   }
   if (reroute_availability_ && !reroute_availability_->availability) {
     throw component_interface_utils::ServiceException(
@@ -448,14 +465,9 @@ void MissionPlanner::on_clear_mrm_route(
 {
   using ResponseCode = autoware_adapi_v1_msgs::srv::SetRoutePoints::Response;
 
-  if (!planner_->ready()) {
-    change_state(RouteState::Message::SET);
+  if (state_.state == RouteState::Message::UNKNOWN) {  // should be UNINITIALIZED
     throw component_interface_utils::ServiceException(
-      ResponseCode::ERROR_PLANNER_UNREADY, "The planner is not ready.");
-  }
-  if (!odometry_) {
-    throw component_interface_utils::ServiceException(
-      ResponseCode::ERROR_PLANNER_UNREADY, "The vehicle pose is not received.");
+      ResponseCode::ERROR_ROUTE_EXISTS, "The planner is not ready.");
   }
   if (!mrm_route_) {
     throw component_interface_utils::NoEffectWarning("MRM route is not set");
@@ -574,17 +586,13 @@ void MissionPlanner::on_change_route(
 {
   using ResponseCode = autoware_adapi_v1_msgs::srv::SetRoute::Response;
 
+  if (state_.state == RouteState::Message::UNKNOWN) {  // should be UNINITIALIZED
+    throw component_interface_utils::ServiceException(
+      ResponseCode::ERROR_ROUTE_EXISTS, "The planner is not ready.");
+  }
   if (state_.state != RouteState::Message::SET) {
     throw component_interface_utils::ServiceException(
       ResponseCode::ERROR_INVALID_STATE, "The route hasn't set yet. Cannot reroute.");
-  }
-  if (!planner_->ready()) {
-    throw component_interface_utils::ServiceException(
-      ResponseCode::ERROR_PLANNER_UNREADY, "The planner is not ready.");
-  }
-  if (!odometry_) {
-    throw component_interface_utils::ServiceException(
-      ResponseCode::ERROR_PLANNER_UNREADY, "The vehicle pose is not received.");
   }
   if (!normal_route_) {
     throw component_interface_utils::ServiceException(
@@ -637,17 +645,13 @@ void MissionPlanner::on_change_route_points(
 {
   using ResponseCode = autoware_adapi_v1_msgs::srv::SetRoutePoints::Response;
 
+  if (state_.state == RouteState::Message::UNKNOWN) {  // should be UNINITIALIZED
+    throw component_interface_utils::ServiceException(
+      ResponseCode::ERROR_ROUTE_EXISTS, "The planner is not ready.");
+  }
   if (state_.state != RouteState::Message::SET) {
     throw component_interface_utils::ServiceException(
       ResponseCode::ERROR_INVALID_STATE, "The route hasn't set yet. Cannot reroute.");
-  }
-  if (!planner_->ready()) {
-    throw component_interface_utils::ServiceException(
-      ResponseCode::ERROR_PLANNER_UNREADY, "The planner is not ready.");
-  }
-  if (!odometry_) {
-    throw component_interface_utils::ServiceException(
-      ResponseCode::ERROR_PLANNER_UNREADY, "The vehicle pose is not received.");
   }
   if (!normal_route_) {
     throw component_interface_utils::ServiceException(
