@@ -125,17 +125,15 @@ TrackedObject ObjectInfo::toTrackedObject(
 DummyPerceptionPublisherNode::DummyPerceptionPublisherNode()
 : Node("dummy_perception_publisher"), tf_buffer_(this->get_clock()), tf_listener_(tf_buffer_)
 {
-  visible_range_ = this->declare_parameter("visible_range", 100.0);
-  detection_successful_rate_ = this->declare_parameter("detection_successful_rate", 0.8);
-  enable_ray_tracing_ = this->declare_parameter("enable_ray_tracing", true);
-  use_object_recognition_ = this->declare_parameter("use_object_recognition", true);
-  use_base_link_z_ = this->declare_parameter("use_base_link_z", true);
-  const bool object_centric_pointcloud =
-    this->declare_parameter("object_centric_pointcloud", false);
-  publish_ground_truth_objects_ = this->declare_parameter("publish_ground_truth", false);
-  const unsigned int random_seed =
-    static_cast<unsigned int>(this->declare_parameter("random_seed", 0));
-  const bool use_fixed_random_seed = this->declare_parameter("use_fixed_random_seed", false);
+  visible_range_ = declare_parameter("visible_range", 100.0);
+  detection_successful_rate_ = declare_parameter("detection_successful_rate", 0.8);
+  enable_ray_tracing_ = declare_parameter("enable_ray_tracing", true);
+  use_object_recognition_ = declare_parameter("use_object_recognition", true);
+  use_base_link_z_ = declare_parameter("use_base_link_z", true);
+  const bool object_centric_pointcloud = declare_parameter("object_centric_pointcloud", false);
+  publish_ground_truth_objects_ = declare_parameter("publish_ground_truth", false);
+  const unsigned int random_seed = static_cast<unsigned int>(declare_parameter("random_seed", 0));
+  const bool use_fixed_random_seed = declare_parameter("use_fixed_random_seed", false);
 
   if (object_centric_pointcloud) {
     pointcloud_creator_ =
@@ -146,7 +144,7 @@ DummyPerceptionPublisherNode::DummyPerceptionPublisherNode()
   }
 
   // parameters for vehicle centric point cloud generation
-  angle_increment_ = this->declare_parameter("angle_increment", 0.25 * M_PI / 180.0);
+  angle_increment_ = declare_parameter("angle_increment", 0.25 * M_PI / 180.0);
 
   if (use_fixed_random_seed) {
     random_generator_.seed(random_seed);
@@ -159,18 +157,17 @@ DummyPerceptionPublisherNode::DummyPerceptionPublisherNode()
   rclcpp::QoS qos{1};
   qos.transient_local();
   detected_object_with_feature_pub_ =
-    this->create_publisher<tier4_perception_msgs::msg::DetectedObjectsWithFeature>(
+    create_publisher<tier4_perception_msgs::msg::DetectedObjectsWithFeature>(
       "output/dynamic_object", qos);
-  pointcloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("output/points_raw", qos);
-  object_sub_ = this->create_subscription<dummy_perception_publisher::msg::Object>(
+  pointcloud_pub_ = create_publisher<sensor_msgs::msg::PointCloud2>("output/points_raw", qos);
+  object_sub_ = create_subscription<dummy_perception_publisher::msg::Object>(
     "input/object", 100,
     std::bind(&DummyPerceptionPublisherNode::objectCallback, this, std::placeholders::_1));
 
   // optional ground truth publisher
   if (publish_ground_truth_objects_) {
     ground_truth_objects_pub_ =
-      this->create_publisher<autoware_auto_perception_msgs::msg::TrackedObjects>(
-        "~/output/debug/ground_truth_objects", qos);
+      create_publisher<TrackedObjects>("~/output/debug/ground_truth_objects", qos);
   }
 
   using std::chrono_literals::operator""ms;
@@ -182,10 +179,9 @@ void DummyPerceptionPublisherNode::timerCallback()
 {
   // output msgs
   tier4_perception_msgs::msg::DetectedObjectsWithFeature output_dynamic_object_msg;
-  autoware_auto_perception_msgs::msg::TrackedObjects output_ground_truth_objects_msg;
+  TrackedObjects output_ground_truth_objects_msg;
   geometry_msgs::msg::PoseStamped output_moved_object_pose;
   sensor_msgs::msg::PointCloud2 output_pointcloud_msg;
-  std_msgs::msg::Header header;
   rclcpp::Time current_time = this->now();
 
   // avoid terminal contamination.
@@ -194,8 +190,7 @@ void DummyPerceptionPublisherNode::timerCallback()
     return;
   }
 
-  std::string error;
-  if (!tf_buffer_.canTransform("base_link", /*src*/ "map", tf2::TimePointZero, &error)) {
+  if (!tf_buffer_.canTransform("base_link", /*src*/ "map", tf2::TimePointZero)) {
     failed_tf_time = this->now();
     RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000, "map->base_link is not available yet");
     return;
@@ -203,8 +198,7 @@ void DummyPerceptionPublisherNode::timerCallback()
 
   tf2::Transform tf_base_link2map;
   try {
-    geometry_msgs::msg::TransformStamped ros_base_link2map;
-    ros_base_link2map = tf_buffer_.lookupTransform(
+    const geometry_msgs::msg::TransformStamped ros_base_link2map = tf_buffer_.lookupTransform(
       /*target*/ "base_link", /*src*/ "map", current_time, rclcpp::Duration::from_seconds(0.5));
     tf2::fromMsg(ros_base_link2map.transform, tf_base_link2map);
   } catch (tf2::TransformException & ex) {
@@ -292,12 +286,8 @@ void DummyPerceptionPublisherNode::timerCallback()
       output_dynamic_object_msg.feature_objects.push_back(feature_object);
 
       // check delete idx
-      tf2::Transform tf_base_link2moved_object;
-      tf_base_link2moved_object = tf_base_link2map * object_info.tf_map2moved_object;
-      double dist = std::sqrt(
-        tf_base_link2moved_object.getOrigin().x() * tf_base_link2moved_object.getOrigin().x() +
-        tf_base_link2moved_object.getOrigin().y() * tf_base_link2moved_object.getOrigin().y());
-      if (visible_range_ < dist) {
+      const auto tf_base_link2moved_object = tf_base_link2map * object_info.tf_map2moved_object;
+      if (visible_range_ < tf_base_link2moved_object.getOrigin().length()) {
         delete_idxs.push_back(selected_idx);
       }
     }
