@@ -265,8 +265,7 @@ void DummyPerceptionPublisherNode::timerCallback()
       noised_quat.setRPY(0, 0, yaw_random(random_generator_));
       tf2::Transform tf_moved_object2noised_moved_object(
         noised_quat, tf2::Vector3(x_random(random_generator_), y_random(random_generator_), 0.0));
-      tf2::Transform tf_base_link2noised_moved_object;
-      tf_base_link2noised_moved_object =
+      const tf2::Transform tf_base_link2noised_moved_object =
         tf_base_link2map * object_info.tf_map2moved_object * tf_moved_object2noised_moved_object;
 
       // add DetectedObjectWithFeature
@@ -327,8 +326,7 @@ void DummyPerceptionPublisherNode::objectCallback(
       tf2::Transform tf_input2object_origin;
       tf2::Transform tf_map2object_origin;
       try {
-        geometry_msgs::msg::TransformStamped ros_input2map;
-        ros_input2map = tf_buffer_.lookupTransform(
+        const auto ros_input2map = tf_buffer_.lookupTransform(
           /*target*/ msg->header.frame_id, /*src*/ "map", msg->header.stamp,
           rclcpp::Duration::from_seconds(0.5));
         tf2::fromMsg(ros_input2map.transform, tf_input2map);
@@ -375,8 +373,7 @@ void DummyPerceptionPublisherNode::objectCallback(
           tf2::Transform tf_input2object_origin;
           tf2::Transform tf_map2object_origin;
           try {
-            geometry_msgs::msg::TransformStamped ros_input2map;
-            ros_input2map = tf_buffer_.lookupTransform(
+            const auto ros_input2map = tf_buffer_.lookupTransform(
               /*target*/ msg->header.frame_id, /*src*/ "map", msg->header.stamp,
               rclcpp::Duration::from_seconds(0.5));
             tf2::fromMsg(ros_input2map.transform, tf_input2map);
