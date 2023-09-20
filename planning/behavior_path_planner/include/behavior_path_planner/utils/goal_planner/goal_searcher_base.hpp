@@ -40,13 +40,18 @@ struct GoalCandidate
 
   bool operator<(const GoalCandidate & other) const noexcept
   {
-    const double diff = distance_from_original_goal - other.distance_from_original_goal;
-    constexpr double eps = 0.01;
-    if (std::abs(diff) < eps) {
-      return lateral_offset < other.lateral_offset;
-    }
+    const double lateral_cost = 30.0;
 
-    return distance_from_original_goal < other.distance_from_original_goal;
+    return distance_from_original_goal + lateral_cost * lateral_offset <
+           other.distance_from_original_goal + lateral_cost * other.lateral_offset;
+
+    // const double diff = distance_from_original_goal - other.distance_from_original_goal;
+    // constexpr double eps = 0.01;
+    // if (std::abs(diff) < eps) {
+    //   return lateral_offset < other.lateral_offset;
+    // }
+
+    // return distance_from_original_goal < other.distance_from_original_goal;
   }
 };
 using GoalCandidates = std::vector<GoalCandidate>;
