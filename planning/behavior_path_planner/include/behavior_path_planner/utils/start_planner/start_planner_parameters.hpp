@@ -35,15 +35,17 @@ using freespace_planning_algorithms::RRTStarParam;
 
 struct StartPlannerParameters
 {
-  double th_arrived_distance;
-  double th_stopped_velocity;
-  double th_stopped_time;
-  double th_turn_signal_on_lateral_offset;
-  double intersection_search_length;
-  double length_ratio_for_turn_signal_deactivation_near_intersection;
-  double collision_check_margin;
-  double collision_check_distance_from_end;
-  double th_moving_object_velocity;
+  double th_arrived_distance{0.0};
+  double th_stopped_velocity{0.0};
+  double th_stopped_time{0.0};
+  double th_turn_signal_on_lateral_offset{0.0};
+  double th_distance_to_middle_of_the_road{0.0};
+  double intersection_search_length{0.0};
+  double length_ratio_for_turn_signal_deactivation_near_intersection{0.0};
+  double collision_check_margin{0.0};
+  double collision_check_distance_from_end{0.0};
+  double th_moving_object_velocity{0.0};
+
   // shift pull out
   bool enable_shift_pull_out;
   bool check_shift_path_lane_departure;

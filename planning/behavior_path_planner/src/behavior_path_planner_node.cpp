@@ -1195,6 +1195,9 @@ StartPlannerParameters BehaviorPathPlannerNode::getStartPlannerParam()
   p.collision_check_distance_from_end =
     declare_parameter<double>(ns + "collision_check_distance_from_end");
   p.th_moving_object_velocity = declare_parameter<double>(ns + "th_moving_object_velocity");
+  p.th_distance_to_middle_of_the_road =
+    declare_parameter<double>(ns + "th_distance_to_middle_of_the_road");
+
   // shift pull out
   p.enable_shift_pull_out = declare_parameter<bool>(ns + "enable_shift_pull_out");
   p.check_shift_path_lane_departure =
