@@ -165,7 +165,10 @@ ModuleStatus AvoidanceModule::updateState()
 {
   const auto & data = avoidance_data_;
   const auto is_plan_running = isAvoidancePlanRunning();
-  const bool has_avoidance_target = !data.target_objects.empty();
+  const bool has_avoidance_target =
+    std::any_of(data.target_objects.begin(), data.target_objects.end(), [](const auto & o) {
+      return o.is_avoidable || o.reason == AvoidanceDebugFactor::TOO_LARGE_JERK;
+    });
 
   const auto idx = planner_data_->findEgoIndex(data.reference_path.points);
   if (idx == data.reference_path.points.size() - 1) {
@@ -3550,6 +3553,12 @@ void AvoidanceModule::insertPrepareVelocity(ShiftedPath & shifted_path) const
   }
 
   const auto object = data.target_objects.front();
+
+  const auto enough_space =
+    object.is_avoidable || object.reason == AvoidanceDebugFactor::TOO_LARGE_JERK;
+  if (!enough_space) {
+    return;
+  }
 
   // calculate shift length for front object.
   const auto & vehicle_width = planner_data_->parameters.vehicle_width;
