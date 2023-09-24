@@ -1215,6 +1215,7 @@ void StartPlannerModule::setDebugData() const
   add(createPoseMarkerArray(status_.pull_out_path.start_pose, "start_pose", 0, 0.3, 0.9, 0.3));
   add(createPoseMarkerArray(status_.pull_out_path.end_pose, "end_pose", 0, 0.9, 0.9, 0.3));
   add(createPathMarkerArray(getFullPath(), "full_path", 0, 0.0, 0.5, 0.9));
+  add(createPathMarkerArray(status_.backward_path, "backward_driving_path", 0, 0.0, 0.9, 0.0));
   if (start_planner_data_.ego_predicted_path.size() > 0) {
     const auto & ego_predicted_path = utils::path_safety_checker::convertToPredictedPath(
       start_planner_data_.ego_predicted_path, ego_predicted_path_params_->time_resolution);
