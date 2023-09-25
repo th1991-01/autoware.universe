@@ -1188,7 +1188,7 @@ void StartPlannerModule::setDrivableAreaInfo(BehaviorModuleOutput & output) cons
     DrivableAreaInfo current_drivable_area_info;
     current_drivable_area_info.drivable_lanes = target_drivable_lanes;
     output.drivable_area_info =
-      status_.back_finished
+      !status_.need_backward_driving
         ? utils::combineDrivableAreaInfo(
             current_drivable_area_info, getPreviousModuleOutput().drivable_area_info)
         : current_drivable_area_info;
