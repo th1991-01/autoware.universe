@@ -859,6 +859,8 @@ GoalPlannerParameters BehaviorPathPlannerNode::getGoalPlannerParam()
   {
     std::string ns = "goal_planner.goal_search.";
     p.goal_priority = declare_parameter<std::string>(ns + "goal_priority");
+    p.minimum_weighted_distance_lateral_weight =
+      declare_parameter<double>(ns + "minimum_weighted_distance.lateral_weight");
     p.prioritize_goals_before_objects =
       declare_parameter<bool>(ns + "prioritize_goals_before_objects");
     p.forward_goal_search_length = declare_parameter<double>(ns + "forward_goal_search_length");

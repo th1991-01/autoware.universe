@@ -52,6 +52,7 @@ struct GoalPlannerParameters
   double minimum_weighted_distance_lateral_weight{0.0};
   bool prioritize_goals_before_objects{false};
   ParkingPolicy parking_policy;  // "left_side" or "right_side"
+
   double forward_goal_search_length{0.0};
   double backward_goal_search_length{0.0};
   double goal_search_interval{0.0};
