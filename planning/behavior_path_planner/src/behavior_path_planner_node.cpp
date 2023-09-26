@@ -232,6 +232,14 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
         this, "dynamic_avoidance", p.config_dynamic_avoidance);
       planner_manager_->registerSceneModuleManager(manager);
     }
+    {
+      ModuleConfigParameters config;
+      config.enable_module = true;
+      config.priority = 16;
+      auto manager =
+        std::make_shared<SamplingPlannerModuleManager>(this, "sampling_planner", config);
+      planner_manager_->registerSceneModuleManager(manager);
+    }
   }
 
   m_set_param_res = this->add_on_set_parameters_callback(

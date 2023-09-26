@@ -22,6 +22,8 @@ ament_auto_add_library(behavior_path_planner_node SHARED
   src/scene_module/goal_planner/manager.cpp
   src/scene_module/side_shift/side_shift_module.cpp
   src/scene_module/side_shift/manager.cpp
+  src/scene_module/sampling_planner/sampling_planner_module.cpp
+  src/scene_module/sampling_planner/manager.cpp
   src/scene_module/lane_change/interface.cpp
   src/scene_module/lane_change/normal.cpp
   src/scene_module/lane_change/external_request.cpp
