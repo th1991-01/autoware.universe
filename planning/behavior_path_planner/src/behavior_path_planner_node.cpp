@@ -858,7 +858,9 @@ GoalPlannerParameters BehaviorPathPlannerNode::getGoalPlannerParam()
   // goal search
   {
     std::string ns = "goal_planner.goal_search.";
-    p.search_priority = declare_parameter<std::string>(ns + "search_priority");
+    p.goal_priority = declare_parameter<std::string>(ns + "goal_priority");
+    p.prioritize_goals_before_objects =
+      declare_parameter<bool>(ns + "prioritize_goals_before_objects");
     p.forward_goal_search_length = declare_parameter<double>(ns + "forward_goal_search_length");
     p.backward_goal_search_length = declare_parameter<double>(ns + "backward_goal_search_length");
     p.goal_search_interval = declare_parameter<double>(ns + "goal_search_interval");
@@ -916,6 +918,9 @@ GoalPlannerParameters BehaviorPathPlannerNode::getGoalPlannerParam()
     p.decide_path_distance = declare_parameter<double>(ns + "decide_path_distance");
     p.maximum_deceleration = declare_parameter<double>(ns + "maximum_deceleration");
     p.maximum_jerk = declare_parameter<double>(ns + "maximum_jerk");
+    p.path_priority = declare_parameter<std::string>(ns + "path_priority");
+    p.efficient_path_order =
+      declare_parameter<std::vector<std::string>>(ns + "efficient_path_order");
   }
 
   // shift parking

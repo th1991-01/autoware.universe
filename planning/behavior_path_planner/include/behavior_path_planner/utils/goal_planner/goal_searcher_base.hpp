@@ -40,7 +40,7 @@ struct GoalCandidate
 
   bool operator<(const GoalCandidate & other) const noexcept
   {
-    const double lateral_cost = 30.0;
+    const double lateral_cost = 40.0;
 
     return distance_from_original_goal + lateral_cost * lateral_offset <
            other.distance_from_original_goal + lateral_cost * other.lateral_offset;
@@ -53,6 +53,7 @@ struct GoalCandidate
 
     // return distance_from_original_goal < other.distance_from_original_goal;
   }
+  size_t num_objects_to_avoid{0};
 };
 using GoalCandidates = std::vector<GoalCandidate>;
 
@@ -62,19 +63,25 @@ public:
   explicit GoalSearcherBase(const GoalPlannerParameters & parameters) { parameters_ = parameters; }
   virtual ~GoalSearcherBase() = default;
 
+  void setReferenceGoal(const Pose & reference_goal_pose)
+  {
+    reference_goal_pose_ = reference_goal_pose;
+  }
+
   void setPlannerData(const std::shared_ptr<const PlannerData> & planner_data)
   {
     planner_data_ = planner_data;
   }
 
   MultiPolygon2d getAreaPolygons() { return area_polygons_; }
-  virtual GoalCandidates search(const Pose & original_goal_pose) = 0;
+  virtual GoalCandidates search() = 0;
   virtual void update([[maybe_unused]] GoalCandidates & goal_candidates) const { return; }
 
 protected:
-  GoalPlannerParameters parameters_;
-  std::shared_ptr<const PlannerData> planner_data_;
-  MultiPolygon2d area_polygons_;
+  GoalPlannerParameters parameters_{};
+  std::shared_ptr<const PlannerData> planner_data_{nullptr};
+  Pose reference_goal_pose_{};
+  MultiPolygon2d area_polygons_{};
 };
 }  // namespace behavior_path_planner
 

@@ -48,16 +48,18 @@ struct GoalPlannerParameters
   double th_blinker_on_lateral_offset;
 
   // goal search
-  std::string search_priority;   // "efficient_path" or "close_goal"
+  std::string goal_priority;  // "minimum_weighted_distance" or "minimum_longitudinal_distance"
+  double minimum_weighted_distance_lateral_weight{0.0};
+  bool prioritize_goals_before_objects{false};
   ParkingPolicy parking_policy;  // "left_side" or "right_side"
-  double forward_goal_search_length;
-  double backward_goal_search_length;
-  double goal_search_interval;
-  double longitudinal_margin;
-  double max_lateral_offset;
-  double lateral_offset_interval;
-  double ignore_distance_from_lane_start;
-  double margin_from_boundary;
+  double forward_goal_search_length{0.0};
+  double backward_goal_search_length{0.0};
+  double goal_search_interval{0.0};
+  double longitudinal_margin{0.0};
+  double max_lateral_offset{0.0};
+  double lateral_offset_interval{0.0};
+  double ignore_distance_from_lane_start{0.0};
+  double margin_from_boundary{0.0};
 
   // occupancy grid map
   bool use_occupancy_grid_for_goal_search;
@@ -74,11 +76,14 @@ struct GoalPlannerParameters
   double th_moving_object_velocity;
 
   // pull over general params
-  double pull_over_velocity;
-  double pull_over_minimum_velocity;
-  double decide_path_distance;
-  double maximum_deceleration;
-  double maximum_jerk;
+  double pull_over_minimum_request_length{0.0};
+  double pull_over_velocity{0.0};
+  double pull_over_minimum_velocity{0.0};
+  double decide_path_distance{0.0};
+  double maximum_deceleration{0.0};
+  double maximum_jerk{0.0};
+  std::string path_priority;  // "efficient_path" or "close_goal"
+  std::vector<std::string> efficient_path_order{};
 
   // shift path
   bool enable_shift_parking;
