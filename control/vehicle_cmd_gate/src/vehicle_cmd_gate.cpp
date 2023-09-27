@@ -77,8 +77,6 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
     create_publisher<IsFilterActivated>("~/is_filter_activated", durable_qos);
   filter_activated_marker_pub_ =
     create_publisher<MarkerArray>("~/is_filter_activated/marker", durable_qos);
-debug_array_pub_ =
-    create_publisher<Float64MultiArrayStamped>("~/debug_array", durable_qos);
 
   // Subscriber
   external_emergency_stop_heartbeat_sub_ = create_subscription<Heartbeat>(
@@ -161,6 +159,7 @@ debug_array_pub_ =
   moderate_stop_service_acceleration_ =
     declare_parameter<double>("moderate_stop_service_acceleration");
   stop_check_duration_ = declare_parameter<double>("stop_check_duration");
+  enable_cmd_limit_filter_ = declare_parameter<bool>("enable_cmd_limit_filter");
 
   // Vehicle Parameter
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
@@ -170,6 +169,8 @@ debug_array_pub_ =
     p.vel_lim = declare_parameter<double>("nominal.vel_lim");
     p.reference_speed_points =
       declare_parameter<std::vector<double>>("nominal.reference_speed_points");
+    p.steer_lim = declare_parameter<std::vector<double>>("nominal.steer_lim");
+    p.steer_rate_lim = declare_parameter<std::vector<double>>("nominal.steer_rate_lim");
     p.lon_acc_lim = declare_parameter<std::vector<double>>("nominal.lon_acc_lim");
     p.lon_jerk_lim = declare_parameter<std::vector<double>>("nominal.lon_jerk_lim");
     p.lat_acc_lim = declare_parameter<std::vector<double>>("nominal.lat_acc_lim");
@@ -185,6 +186,8 @@ debug_array_pub_ =
     p.vel_lim = declare_parameter<double>("on_transition.vel_lim");
     p.reference_speed_points =
       declare_parameter<std::vector<double>>("on_transition.reference_speed_points");
+    p.steer_lim = declare_parameter<std::vector<double>>("on_transition.steer_lim");
+    p.steer_rate_lim = declare_parameter<std::vector<double>>("on_transition.steer_rate_lim");
     p.lon_acc_lim = declare_parameter<std::vector<double>>("on_transition.lon_acc_lim");
     p.lon_jerk_lim = declare_parameter<std::vector<double>>("on_transition.lon_jerk_lim");
     p.lat_acc_lim = declare_parameter<std::vector<double>>("on_transition.lat_acc_lim");
@@ -424,13 +427,14 @@ void VehicleCmdGate::publishControlCommands(const Commands & commands)
   // Check pause. Place this check after all other checks as it needs the final output.
   adapi_pause_->update(filtered_commands.control);
   if (adapi_pause_->is_paused()) {
-    filtered_commands.control.longitudinal.speed = 0.0;
-    filtered_commands.control.longitudinal.acceleration = stop_hold_acceleration_;
+    filtered_commands.control = createStopControlCmd();
   }
 
-  // Apply limit filtering
-  filtered_commands.control = filterControlCommand(filtered_commands.control);
-
+  // Check if command filtering option is enable
+  if (enable_cmd_limit_filter_) {
+    // Apply limit filtering
+    filtered_commands.control = filterControlCommand(filtered_commands.control);
+  }
   // tmp: Publish vehicle emergency status
   VehicleEmergencyStamped vehicle_cmd_emergency;
   vehicle_cmd_emergency.emergency = (use_emergency_handling_ && is_system_emergency_);
@@ -549,9 +553,8 @@ AckermannControlCommand VehicleCmdGate::filterControlCommand(const AckermannCont
   // set prev value for both to keep consistency over switching:
   // Actual steer, vel, acc should be considered in manual mode to prevent sudden motion when
   // switching from manual to autonomous
-  // const auto in_autonomous =
-  //   (mode.mode == OperationModeState::AUTONOMOUS && mode.is_autoware_control_enabled);
-  const auto in_autonomous = mode.is_autoware_control_enabled;
+  const auto in_autonomous =
+    (mode.mode == OperationModeState::AUTONOMOUS && mode.is_autoware_control_enabled);
   auto prev_values = in_autonomous ? out : current_status_cmd;
 
   if (ego_is_stopped) {
@@ -567,27 +570,9 @@ AckermannControlCommand VehicleCmdGate::filterControlCommand(const AckermannCont
   filter_.setPrevCmd(prev_values);
   filter_on_transition_.setPrevCmd(prev_values);
 
-  const auto debug = filter_.debug_info_;
-  is_filter_activated.limit_lon_acc = debug.limit.lon_acc;
-  is_filter_activated.limit_lon_jerk = debug.limit.lon_jerk;
-  is_filter_activated.limit_lat_acc = debug.limit.lat_acc;
-  is_filter_activated.limit_lat_jerk = debug.limit.lat_jerk;
-  is_filter_activated.before_lon_acc = debug.before.lon_acc;
-  is_filter_activated.before_lon_jerk = debug.before.lon_jerk;
-  is_filter_activated.before_lat_acc = debug.before.lat_acc;
-  is_filter_activated.before_lat_jerk = debug.before.lat_jerk;
-  is_filter_activated.after_lon_acc = debug.after.lon_acc;
-  is_filter_activated.after_lon_jerk = debug.after.lon_jerk;
-  is_filter_activated.after_lat_acc = debug.after.lat_acc;
-  is_filter_activated.after_lat_jerk = debug.after.lat_jerk;
-
   is_filter_activated.stamp = now();
   is_filter_activated_pub_->publish(is_filter_activated);
   filter_activated_marker_pub_->publish(createMarkerArray(is_filter_activated));
-
-  filter_.debug_array_.stamp = now();
-  debug_array_pub_->publish(filter_.debug_array_);
-  filter_.debug_array_.data.clear();
 
   return out;
 }

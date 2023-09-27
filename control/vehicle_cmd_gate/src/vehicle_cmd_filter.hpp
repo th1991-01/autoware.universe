@@ -18,8 +18,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include <vehicle_cmd_gate/msg/is_filter_activated.hpp>
 
-#include <tier4_debug_msgs/msg/float64_multi_array_stamped.hpp>
-
 #include <autoware_auto_control_msgs/msg/ackermann_control_command.hpp>
 
 #include <vector>
@@ -29,8 +27,6 @@ namespace vehicle_cmd_gate
 using autoware_auto_control_msgs::msg::AckermannControlCommand;
 using vehicle_cmd_gate::msg::IsFilterActivated;
 using LimitArray = std::vector<double>;
-using LimitArray = std::vector<double>;
-using tier4_debug_msgs::msg::Float64MultiArrayStamped;
 
 struct VehicleCmdFilterParam
 {
@@ -41,22 +37,10 @@ struct VehicleCmdFilterParam
   LimitArray lon_jerk_lim;
   LimitArray lat_acc_lim;
   LimitArray lat_jerk_lim;
+  LimitArray steer_lim;
+  LimitArray steer_rate_lim;
   LimitArray actual_steer_diff_lim;
 };
-
-struct VehicleCmdFilterDebugInfo
-{
-  struct Info{
-    double lat_acc;
-    double lat_jerk;
-    double lon_acc;
-    double lon_jerk;
-  };
-  Info limit;
-  Info before;
-  Info after;
-};
-
 class VehicleCmdFilter
 {
 public:
@@ -65,6 +49,8 @@ public:
 
   void setWheelBase(double v) { param_.wheel_base = v; }
   void setVelLim(double v) { param_.vel_lim = v; }
+  void setSteerLim(LimitArray v);
+  void setSteerRateLim(LimitArray v);
   void setLonAccLim(LimitArray v);
   void setLonJerkLim(LimitArray v);
   void setLatAccLim(LimitArray v);
@@ -82,6 +68,7 @@ public:
   void limitActualSteerDiff(
     const double current_steer_angle, AckermannControlCommand & input) const;
   void limitLateralSteer(AckermannControlCommand & input) const;
+  void limitLateralSteerRate(const double dt, AckermannControlCommand & input) const;
   void filterAll(
     const double dt, const double current_steer_angle, AckermannControlCommand & input,
     IsFilterActivated & is_activated) const;
@@ -90,9 +77,6 @@ public:
     const double tol = 1.0e-3);
 
   AckermannControlCommand getPrevCmd() { return prev_cmd_; }
-
-  mutable VehicleCmdFilterDebugInfo debug_info_;
-  mutable Float64MultiArrayStamped debug_array_;
 
 private:
   VehicleCmdFilterParam param_;
@@ -103,7 +87,6 @@ private:
 
   double calcLatAcc(const AckermannControlCommand & cmd) const;
   double calcLatAcc(const AckermannControlCommand & cmd, const double v) const;
-
   double calcSteerFromLatacc(const double v, const double latacc) const;
   double limitDiff(const double curr, const double prev, const double diff_lim) const;
 
@@ -112,6 +95,8 @@ private:
   double getLonJerkLim() const;
   double getLatAccLim() const;
   double getLatJerkLim() const;
+  double getSteerLim() const;
+  double getSteerRateLim() const;
   double getSteerDiffLim() const;
 };
 }  // namespace vehicle_cmd_gate

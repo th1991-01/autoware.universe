@@ -29,7 +29,8 @@ bool VehicleCmdFilter::setParameterWithValidation(const VehicleCmdFilterParam & 
   const auto s = p.reference_speed_points.size();
   if (
     p.lon_acc_lim.size() != s || p.lon_jerk_lim.size() != s || p.lat_acc_lim.size() != s ||
-    p.lat_jerk_lim.size() != s || p.actual_steer_diff_lim.size() != s) {
+    p.lat_jerk_lim.size() != s || p.actual_steer_diff_lim.size() != s || p.steer_lim.size() != s ||
+    p.steer_rate_lim.size() != s) {
     std::cerr << "VehicleCmdFilter::setParam() There is a size mismatch in the parameter. "
                  "Parameter initialization failed."
               << std::endl;
@@ -39,7 +40,18 @@ bool VehicleCmdFilter::setParameterWithValidation(const VehicleCmdFilterParam & 
   param_ = p;
   return true;
 }
-
+void VehicleCmdFilter::setSteerLim(LimitArray v)
+{
+  auto tmp = param_;
+  tmp.steer_lim = v;
+  setParameterWithValidation(tmp);
+}
+void VehicleCmdFilter::setSteerRateLim(LimitArray v)
+{
+  auto tmp = param_;
+  tmp.steer_rate_lim = v;
+  setParameterWithValidation(tmp);
+}
 void VehicleCmdFilter::setLonAccLim(LimitArray v)
 {
   auto tmp = param_;
@@ -88,12 +100,8 @@ void VehicleCmdFilter::limitLongitudinalWithAcc(
   const double dt, AckermannControlCommand & input) const
 {
   const auto lon_acc_lim = getLonAccLim();
-  debug_info_.limit.lon_acc = lon_acc_lim;
-
-  debug_info_.before.lon_acc = input.longitudinal.acceleration ;
   input.longitudinal.acceleration = std::max(
     std::min(static_cast<double>(input.longitudinal.acceleration), lon_acc_lim), -lon_acc_lim);
-  debug_info_.after.lon_acc = input.longitudinal.acceleration;
   input.longitudinal.speed =
     limitDiff(input.longitudinal.speed, prev_cmd_.longitudinal.speed, lon_acc_lim * dt);
 }
@@ -102,71 +110,45 @@ void VehicleCmdFilter::VehicleCmdFilter::limitLongitudinalWithJerk(
   const double dt, AckermannControlCommand & input) const
 {
   const auto lon_jerk_lim = getLonJerkLim();
-  debug_info_.limit.lon_jerk = lon_jerk_lim;
-
-  debug_info_.before.lon_jerk = (input.longitudinal.acceleration - prev_cmd_.longitudinal.acceleration) / std::max(1.0e-10, dt);
   input.longitudinal.acceleration = limitDiff(
     input.longitudinal.acceleration, prev_cmd_.longitudinal.acceleration, lon_jerk_lim * dt);
-  debug_info_.after.lon_jerk = (input.longitudinal.acceleration - prev_cmd_.longitudinal.acceleration) / std::max(1.0e-10, dt);
   input.longitudinal.jerk =
     std::clamp(static_cast<double>(input.longitudinal.jerk), -lon_jerk_lim, lon_jerk_lim);
 }
 
+// Use ego vehicle speed (not speed command) for the lateral acceleration calculation, otherwise the
+// filtered steering angle oscillates if the input velocity oscillates.
 void VehicleCmdFilter::limitLateralWithLatAcc(
   [[maybe_unused]] const double dt, AckermannControlCommand & input) const
 {
   const auto lat_acc_lim = getLatAccLim();
-  debug_info_.limit.lat_acc = lat_acc_lim;
 
-  double latacc = calcLatAcc(input);
-  debug_info_.before.lat_acc = latacc;
+  double latacc = calcLatAcc(input, current_speed_);
   if (std::fabs(latacc) > lat_acc_lim) {
-    double v_sq =
-      std::max(static_cast<double>(input.longitudinal.speed * input.longitudinal.speed), 0.001);
+    double v_sq = std::max(static_cast<double>(current_speed_ * current_speed_), 0.001);
     double steer_lim = std::atan(lat_acc_lim * param_.wheel_base / v_sq);
     input.lateral.steering_tire_angle = latacc > 0.0 ? steer_lim : -steer_lim;
   }
-  debug_info_.after.lat_acc = calcLatAcc(input);
 }
 
+// Use ego vehicle speed (not speed command) for the lateral acceleration calculation, otherwise the
+// filtered steering angle oscillates if the input velocity oscillates.
 void VehicleCmdFilter::limitLateralWithLatJerk(
   const double dt, AckermannControlCommand & input) const
 {
   double curr_latacc = calcLatAcc(input, current_speed_);
   double prev_latacc = calcLatAcc(prev_cmd_, current_speed_);
 
-  debug_array_.data.push_back(dt);  // [0]
-  debug_array_.data.push_back(input.lateral.steering_tire_angle);  // [1]
-  debug_array_.data.push_back(input.longitudinal.speed);  // [2]
-  debug_array_.data.push_back(prev_cmd_.lateral.steering_tire_angle);  // [3]
-  debug_array_.data.push_back(prev_cmd_.longitudinal.speed);  // [4]
-  debug_array_.data.push_back(curr_latacc);  // [5]
-  debug_array_.data.push_back(prev_latacc);  // [6]
-
   const auto lat_jerk_lim = getLatJerkLim();
-  debug_info_.limit.lat_jerk = lat_jerk_lim;
-
-  debug_array_.data.push_back(lat_jerk_lim);  // [7]
-
-  debug_info_.before.lat_jerk = (curr_latacc - prev_latacc) / std::max(1.0e-10, dt);
 
   const double latacc_max = prev_latacc + lat_jerk_lim * dt;
   const double latacc_min = prev_latacc - lat_jerk_lim * dt;
-  debug_array_.data.push_back(latacc_max);  // [8]
-  debug_array_.data.push_back(latacc_min);  // [9]
 
   if (curr_latacc > latacc_max) {
     input.lateral.steering_tire_angle = calcSteerFromLatacc(current_speed_, latacc_max);
   } else if (curr_latacc < latacc_min) {
     input.lateral.steering_tire_angle = calcSteerFromLatacc(current_speed_, latacc_min);
   }
-
-  debug_array_.data.push_back(input.lateral.steering_tire_angle);  // [10]
-
-  double filtered_latacc = calcLatAcc(input, current_speed_);
-  debug_info_.after.lat_jerk = (filtered_latacc - prev_latacc) / std::max(1.0e-10, dt);
-  debug_array_.data.push_back(filtered_latacc);  // [11]
-
 }
 
 void VehicleCmdFilter::limitActualSteerDiff(
@@ -181,12 +163,36 @@ void VehicleCmdFilter::limitActualSteerDiff(
 
 void VehicleCmdFilter::limitLateralSteer(AckermannControlCommand & input) const
 {
-  // TODO(Horibe): parametrize the max steering angle.
-  // TODO(Horibe): support steering greater than PI/2. Now the lateral acceleration
-  // calculation does not support bigger steering value than PI/2 due to tan/atan calculation.
-  constexpr float steer_limit = M_PI_2;
+  const float steer_limit = getSteerLim();
+
   input.lateral.steering_tire_angle =
     std::clamp(input.lateral.steering_tire_angle, -steer_limit, steer_limit);
+
+  // TODO(Horibe): support steering greater than PI/2. Now the lateral acceleration
+  // calculation does not support bigger steering value than PI/2 due to tan/atan calculation.
+  if (std::abs(input.lateral.steering_tire_angle) > M_PI_2f) {
+    std::cerr << "[vehicle_Cmd_gate] limitLateralSteer(): steering limit is set to pi/2 since the "
+                 "current filtering logic can not handle the steering larger than pi/2. Please "
+                 "check the steering angle limit."
+              << std::endl;
+
+    std::clamp(input.lateral.steering_tire_angle, -M_PI_2f, M_PI_2f);
+  }
+}
+
+void VehicleCmdFilter::limitLateralSteerRate(const double dt, AckermannControlCommand & input) const
+{
+  const float steer_rate_limit = getSteerRateLim();
+
+  // for steering angle rate
+  input.lateral.steering_tire_rotation_rate =
+    std::clamp(input.lateral.steering_tire_rotation_rate, -steer_rate_limit, steer_rate_limit);
+
+  // for steering angle
+  const float steer_diff_limit = steer_rate_limit * dt;
+  float ds = input.lateral.steering_tire_angle - prev_cmd_.lateral.steering_tire_angle;
+  ds = std::clamp(ds, -steer_diff_limit, steer_diff_limit);
+  input.lateral.steering_tire_angle = prev_cmd_.lateral.steering_tire_angle + ds;
 }
 
 void VehicleCmdFilter::filterAll(
@@ -195,6 +201,7 @@ void VehicleCmdFilter::filterAll(
 {
   const auto cmd_orig = cmd;
   limitLateralSteer(cmd);
+  limitLateralSteerRate(dt, cmd);
   limitLongitudinalWithJerk(dt, cmd);
   limitLongitudinalWithAcc(dt, cmd);
   limitLongitudinalWithVel(cmd);
@@ -296,6 +303,14 @@ double VehicleCmdFilter::getLatAccLim() const
 double VehicleCmdFilter::getLatJerkLim() const
 {
   return interpolateFromSpeed(param_.lat_jerk_lim);
+}
+double VehicleCmdFilter::getSteerLim() const
+{
+  return interpolateFromSpeed(param_.steer_lim);
+}
+double VehicleCmdFilter::getSteerRateLim() const
+{
+  return interpolateFromSpeed(param_.steer_rate_lim);
 }
 double VehicleCmdFilter::getSteerDiffLim() const
 {

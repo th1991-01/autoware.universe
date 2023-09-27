@@ -20,7 +20,7 @@
 #include "vehicle_cmd_filter.hpp"
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
-#include <motion_utils/motion_utils.hpp>
+#include <motion_utils/vehicle/vehicle_state_checker.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <vehicle_cmd_gate/msg/is_filter_activated.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
@@ -45,14 +45,12 @@
 #include <tier4_system_msgs/msg/mrm_behavior_status.hpp>
 #include <tier4_vehicle_msgs/msg/vehicle_emergency_stamped.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
-#include <tier4_debug_msgs/msg/float64_multi_array_stamped.hpp>
 
 #include <memory>
 
 namespace vehicle_cmd_gate
 {
 
-using tier4_debug_msgs::msg::Float64MultiArrayStamped;
 using autoware_adapi_v1_msgs::msg::MrmState;
 using autoware_adapi_v1_msgs::msg::OperationModeState;
 using autoware_auto_control_msgs::msg::AckermannControlCommand;
@@ -107,7 +105,6 @@ private:
   rclcpp::Publisher<OperationModeState>::SharedPtr operation_mode_pub_;
   rclcpp::Publisher<IsFilterActivated>::SharedPtr is_filter_activated_pub_;
   rclcpp::Publisher<MarkerArray>::SharedPtr filter_activated_marker_pub_;
-  rclcpp::Publisher<Float64MultiArrayStamped>::SharedPtr debug_array_pub_;
 
   // Subscription
   rclcpp::Subscription<Heartbeat>::SharedPtr external_emergency_stop_heartbeat_sub_;
@@ -173,6 +170,7 @@ private:
   double stop_hold_acceleration_;
   double emergency_acceleration_;
   double moderate_stop_service_acceleration_;
+  bool enable_cmd_limit_filter_;
 
   // Service
   rclcpp::Service<EngageSrv>::SharedPtr srv_engage_;
