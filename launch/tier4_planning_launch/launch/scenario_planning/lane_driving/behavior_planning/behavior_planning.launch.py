@@ -51,6 +51,8 @@ def launch_setup(context, *args, **kwargs):
         avoidance_by_lc_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     with open(LaunchConfiguration("dynamic_avoidance_param_path").perform(context), "r") as f:
         dynamic_avoidance_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+    with open(LaunchConfiguration("sampling_planner_param_path").perform(context), "r") as f:
+        sampling_planner_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     with open(LaunchConfiguration("lane_change_param_path").perform(context), "r") as f:
         lane_change_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     with open(LaunchConfiguration("goal_planner_param_path").perform(context), "r") as f:
@@ -100,6 +102,7 @@ def launch_setup(context, *args, **kwargs):
             avoidance_param,
             avoidance_by_lc_param,
             dynamic_avoidance_param,
+            sampling_planner_param,
             lane_change_param,
             goal_planner_param,
             start_planner_param,

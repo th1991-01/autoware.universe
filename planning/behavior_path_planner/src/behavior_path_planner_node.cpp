@@ -233,6 +233,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
       planner_manager_->registerSceneModuleManager(manager);
     }
     {
+      RCLCPP_INFO(get_logger(), "The priority is %d", p.config_sampling_planner.priority);
       ModuleConfigParameters config;
       config.enable_module = true;
       config.priority = 16;
@@ -324,6 +325,7 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   p.config_avoidance = get_scene_module_manager_param("avoidance.");
   p.config_avoidance_by_lc = get_scene_module_manager_param("avoidance_by_lc.");
   p.config_dynamic_avoidance = get_scene_module_manager_param("dynamic_avoidance.");
+  p.config_sampling_planner = get_scene_module_manager_param("sampling_planner.");
 
   // vehicle info
   const auto vehicle_info = VehicleInfoUtil(*this).getVehicleInfo();

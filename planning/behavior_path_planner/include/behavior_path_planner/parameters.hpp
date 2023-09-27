@@ -86,6 +86,7 @@ struct BehaviorPathPlannerParameters
   ModuleConfigParameters config_side_shift;
   ModuleConfigParameters config_lane_change_left;
   ModuleConfigParameters config_lane_change_right;
+  ModuleConfigParameters config_sampling_planner;
   ModuleConfigParameters config_ext_request_lane_change_left;
   ModuleConfigParameters config_ext_request_lane_change_right;
 
