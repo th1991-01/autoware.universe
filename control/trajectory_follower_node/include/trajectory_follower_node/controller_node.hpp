@@ -113,8 +113,12 @@ private:
     const trajectory_follower::LateralOutput & lat_out) const;
 
   rclcpp::Subscription<Float32MultiArrayStamped>::SharedPtr sub_control_;
+  rclcpp::Subscription<Float32MultiArrayStamped>::SharedPtr sub_control_lon_;
   Float32MultiArrayStamped::ConstSharedPtr debug_control_;
+  Float32MultiArrayStamped::ConstSharedPtr debug_control_lon_;
   autoware_auto_control_msgs::msg::AckermannControlCommand getDebugOutput(
+    const autoware_auto_control_msgs::msg::AckermannControlCommand & input);
+  autoware_auto_control_msgs::msg::AckermannControlCommand getDebugOutputLongitudinal(
     const autoware_auto_control_msgs::msg::AckermannControlCommand & input);
 };
 }  // namespace trajectory_follower_node

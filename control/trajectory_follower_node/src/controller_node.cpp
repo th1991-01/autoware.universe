@@ -80,6 +80,9 @@ Controller::Controller(const rclcpp::NodeOptions & node_options) : Node("control
   sub_control_ = create_subscription<Float32MultiArrayStamped>(
     "/debug_control_latlon", rclcpp::QoS{1},
     [this](const Float32MultiArrayStamped::ConstSharedPtr msg) { debug_control_ = msg; });
+  sub_control_lon_ = create_subscription<Float32MultiArrayStamped>(
+    "/debug_control_lon", rclcpp::QoS{1},
+    [this](const Float32MultiArrayStamped::ConstSharedPtr msg) { debug_control_lon_ = msg; });
 
   // Timer
   {
@@ -120,6 +123,36 @@ autoware_auto_control_msgs::msg::AckermannControlCommand Controller::getDebugOut
 
   auto output = input;
   output.lateral.steering_tire_angle = steer;
+  output.longitudinal.speed = vel;
+  output.longitudinal.acceleration = acc;
+
+  return output;
+}
+
+autoware_auto_control_msgs::msg::AckermannControlCommand Controller::getDebugOutputLongitudinal(
+  const autoware_auto_control_msgs::msg::AckermannControlCommand & input)
+{
+  if (debug_control_lon_->data.size() < 3) {
+    RCLCPP_ERROR(rclcpp::get_logger("controller_debug"), "debug command size is less than 3 in lon");
+    return input;
+  }
+  static const float MAX_TIME = 2.0;
+  const auto control_time = std::clamp(debug_control_lon_->data.at(0), 0.0f, MAX_TIME);
+
+  const auto vel = debug_control_lon_->data.at(1);
+  const auto acc = debug_control_lon_->data.at(2);
+
+  const auto diff_time = (now() - debug_control_lon_->stamp).seconds();
+  if (diff_time > control_time) {
+    // no additional control
+    return input;
+  }
+
+  RCLCPP_ERROR_STREAM(
+    rclcpp::get_logger("controller_debug_lon"),
+    "control_time: " << control_time << ", vel: " << vel << ", acc: " << acc);
+
+  auto output = input;
   output.longitudinal.speed = vel;
   output.longitudinal.acceleration = acc;
 
@@ -260,6 +293,9 @@ void Controller::callbackTimerControl()
 
   if (debug_control_) {
     out = getDebugOutput(out);
+  }
+  if (debug_control_lon_) {
+    out = getDebugOutputLongitudinal(out);
   }
   control_cmd_pub_->publish(out);
 
