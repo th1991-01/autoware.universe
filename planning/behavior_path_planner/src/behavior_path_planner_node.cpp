@@ -232,13 +232,11 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
         this, "dynamic_avoidance", p.config_dynamic_avoidance);
       planner_manager_->registerSceneModuleManager(manager);
     }
-    {
+    if (p.config_sampling_planner.enable_module) {
       RCLCPP_INFO(get_logger(), "The priority is %d", p.config_sampling_planner.priority);
-      ModuleConfigParameters config;
-      config.enable_module = true;
-      config.priority = 16;
-      auto manager =
-        std::make_shared<SamplingPlannerModuleManager>(this, "sampling_planner", config);
+
+      auto manager = std::make_shared<SamplingPlannerModuleManager>(
+        this, "sampling_planner", p.config_sampling_planner);
       planner_manager_->registerSceneModuleManager(manager);
     }
   }
