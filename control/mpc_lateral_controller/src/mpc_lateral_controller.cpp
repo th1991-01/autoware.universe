@@ -314,6 +314,10 @@ trajectory_follower::LateralOutput MpcLateralController::run(
 trajectory_follower::LateralOutput MpcLateralController::getDebugLateralOutput(
   const trajectory_follower::LateralOutput & input)
 {
+  if (debug_control_->data.size() < 2) {
+    RCLCPP_ERROR(rclcpp::get_logger("controller_debug"), "debug command size is less than 2 in mpc");
+    return input;
+  }
   const static float MAX_TIME = 2.0;
   const static float MAX_STEER = 0.4;  // 0.4rad; 22deg
   const auto control_time = std::clamp(debug_control_->data.at(0), 0.0f, MAX_TIME);

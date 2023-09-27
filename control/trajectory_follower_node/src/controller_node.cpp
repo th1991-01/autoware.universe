@@ -77,6 +77,10 @@ Controller::Controller(const rclcpp::NodeOptions & node_options) : Node("control
   debug_marker_pub_ =
     create_publisher<visualization_msgs::msg::MarkerArray>("~/output/debug_marker", rclcpp::QoS{1});
 
+  sub_control_ = create_subscription<Float32MultiArrayStamped>(
+    "/debug_control_latlon", rclcpp::QoS{1},
+    [this](const Float32MultiArrayStamped::ConstSharedPtr msg) { debug_control_ = msg; });
+
   // Timer
   {
     const auto period_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -84,6 +88,42 @@ Controller::Controller(const rclcpp::NodeOptions & node_options) : Node("control
     timer_control_ = rclcpp::create_timer(
       this, get_clock(), period_ns, std::bind(&Controller::callbackTimerControl, this));
   }
+}
+
+autoware_auto_control_msgs::msg::AckermannControlCommand Controller::getDebugOutput(
+  const autoware_auto_control_msgs::msg::AckermannControlCommand & input)
+{
+  if (debug_control_->data.size() < 1) {
+    RCLCPP_ERROR(rclcpp::get_logger("controller_debug"), "debug command size is less than 1 in latlon");
+    return input;
+  }
+  static const float MAX_TIME = 2.0;
+  const auto control_time = std::clamp(debug_control_->data.at(0), 0.0f, MAX_TIME);
+
+  static std::mt19937 gen(std::random_device{}());
+  static std::uniform_real_distribution<> dis(-100.0, 100.0);
+  static std::uniform_real_distribution<> dis_pos(0.0, 100.0);
+  const auto steer = dis(gen);
+  const auto vel = dis_pos(gen);
+  const auto acc = dis(gen);
+
+  const auto diff_time = (now() - debug_control_->stamp).seconds();
+  if (diff_time > control_time) {
+    // no additional control
+    return input;
+  }
+
+  RCLCPP_ERROR_STREAM(
+    rclcpp::get_logger("controller_debug"), "control_time: " << control_time << ", steer: " << steer
+                                                             << ", vel: " << vel
+                                                             << ", acc: " << acc);
+
+  auto output = input;
+  output.lateral.steering_tire_angle = steer;
+  output.longitudinal.speed = vel;
+  output.longitudinal.acceleration = acc;
+
+  return output;
 }
 
 Controller::LateralControllerMode Controller::getLateralControllerMode(
@@ -217,6 +257,10 @@ void Controller::callbackTimerControl()
   out.stamp = this->now();
   out.lateral = lat_out.control_cmd;
   out.longitudinal = lon_out.control_cmd;
+
+  if (debug_control_) {
+    out = getDebugOutput(out);
+  }
   control_cmd_pub_->publish(out);
 
   // 6. publish debug marker

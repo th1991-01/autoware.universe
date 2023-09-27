@@ -50,6 +50,7 @@ namespace trajectory_follower_node
 {
 
 using autoware_adapi_v1_msgs::msg::OperationModeState;
+using tier4_debug_msgs::msg::Float32MultiArrayStamped;
 
 namespace trajectory_follower = ::autoware::motion::control::trajectory_follower;
 
@@ -110,6 +111,11 @@ private:
   void publishDebugMarker(
     const trajectory_follower::InputData & input_data,
     const trajectory_follower::LateralOutput & lat_out) const;
+
+  rclcpp::Subscription<Float32MultiArrayStamped>::SharedPtr sub_control_;
+  Float32MultiArrayStamped::ConstSharedPtr debug_control_;
+  autoware_auto_control_msgs::msg::AckermannControlCommand getDebugOutput(
+    const autoware_auto_control_msgs::msg::AckermannControlCommand & input);
 };
 }  // namespace trajectory_follower_node
 }  // namespace autoware::motion::control
