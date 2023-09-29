@@ -18,6 +18,7 @@
 
 #include <interpolation/spline_interpolation.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
+#include <motion_utils/resample/resample.hpp>
 #include <motion_utils/trajectory/path_with_lane_id.hpp>
 
 #include <string>
@@ -143,8 +144,21 @@ bool PathShifter::generate(
   }
 
   // Calculate shifted path
-  type == SHIFT_TYPE::SPLINE ? applySplineShifter(shifted_path, offset_back)
-                             : applyLinearShifter(shifted_path);
+  switch (type) {
+    case SHIFT_TYPE::LINEAR:
+      applyLinearShifter(shifted_path);
+      break;
+    case SHIFT_TYPE::SPLINE:
+      applySplineShifter(shifted_path, offset_back);
+      break;
+    case SHIFT_TYPE::SPLINE_WITH_BOUNDARY_POSE:
+      applySplineWithBoundaryPoseShifter(shifted_path, offset_back);
+      break;
+    default:
+      break;
+  }
+  // type == SHIFT_TYPE::SPLINE ? applySplineShifter(shifted_path, offset_back)
+  //                            : applyLinearShifter(shifted_path);
 
   shifted_path->path.points = removeOverlapPoints(shifted_path->path.points);
   // Use orientation before shift to remove points in reverse order
@@ -267,6 +281,58 @@ void PathShifter::applySplineShifter(ShiftedPath * shifted_path, const bool offs
       for (size_t i = 0; i < shift_line.start_idx + 1; ++i) {
         addLateralOffsetOnIndexPoint(shifted_path, query_length.front(), i);
       }
+    }
+  }
+}
+
+void PathShifter::applySplineWithBoundaryPoseShifter(
+  ShiftedPath * shifted_path, const bool offset_back) const
+{
+  const auto arclength_arr = utils::calcPathArcLengthArray(reference_path_);
+
+  shiftBaseLength(shifted_path, base_offset_);
+
+  // constexpr double epsilon = 1.0e-8;  // to avoid 0 division
+
+  // For all shift_lines,
+  for (const auto & shift_line : shift_lines_) {
+    // calc delta shift at the sp.end_idx so that the sp.end_idx on the path will have
+    // the desired shift length.
+    const auto current_shift = shifted_path->shift_length.at(shift_line.end_idx);
+    const auto delta_shift = shift_line.end_shift_length - current_shift;
+
+    RCLCPP_DEBUG(
+      logger_, "current_shift = %f, sp.length = %f", current_shift, shift_line.end_shift_length);
+
+    if (std::abs(delta_shift) < 0.01) {
+      RCLCPP_DEBUG(logger_, "delta shift is zero. skip for this shift point.");
+    }
+
+    // const auto reference_arclength = std::max(arclength_arr.at(shift_line.end_idx) - arclength_arr.at(shift_line.start_idx), epsilon);
+
+    const auto src_pose = tier4_autoware_utils::calcOffsetPose(
+      shifted_path->path.points.at(shift_line.start_idx).point.pose, 0.0, 0.0, 0.0);
+    const auto dst_pose = tier4_autoware_utils::calcOffsetPose(
+      shifted_path->path.points.at(shift_line.end_idx).point.pose, 0.0, delta_shift, 0.0);
+
+    const double required_interval =
+      (tier4_autoware_utils::calcDistance2d(src_pose.position, dst_pose.position) - 0.3) /
+      (shift_line.end_idx - shift_line.start_idx - 1.5);
+
+    auto splined_poses = utils::interpolatePose(src_pose, dst_pose, required_interval);
+
+    for (size_t i = shift_line.start_idx + 1; i < shift_line.end_idx; i++) {
+      shifted_path->path.points.at(i).point.pose = splined_poses[i - 1 - shift_line.start_idx];
+    }
+
+    if (offset_back == true) {
+      // Apply shifting after shift
+      for (size_t i = shift_line.end_idx; i < shifted_path->path.points.size(); ++i) {
+        addLateralOffsetOnIndexPoint(shifted_path, delta_shift, i);
+      }
+    } else {
+      // Apply shifting before shift
+      // ??
     }
   }
 }

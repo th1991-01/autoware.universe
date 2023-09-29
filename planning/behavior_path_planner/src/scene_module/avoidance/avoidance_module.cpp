@@ -501,7 +501,7 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
    */
   ShiftedPath spline_shift_path = utils::avoidance::toShiftedPath(data.reference_path);
   const auto success_spline_path_generation =
-    path_shifter.generate(&spline_shift_path, true, SHIFT_TYPE::SPLINE);
+    path_shifter.generate(&spline_shift_path, true, SHIFT_TYPE::SPLINE_WITH_BOUNDARY_POSE);
   data.candidate_path = success_spline_path_generation
                           ? spline_shift_path
                           : utils::avoidance::toShiftedPath(data.reference_path);

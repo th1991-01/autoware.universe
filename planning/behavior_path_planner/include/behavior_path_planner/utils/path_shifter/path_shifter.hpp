@@ -57,6 +57,7 @@ struct ShiftedPath
 enum class SHIFT_TYPE {
   LINEAR = 0,
   SPLINE = 1,
+  SPLINE_WITH_BOUNDARY_POSE = 2,
 };
 
 class PathShifter
@@ -216,6 +217,8 @@ private:
    *          The resultant shifting shape is closed to the Clothoid curve.
    */
   void applySplineShifter(ShiftedPath * shifted_path, const bool offset_back) const;
+
+  void applySplineWithBoundaryPoseShifter(ShiftedPath * shifted_path, const bool offset_back) const;
 
   ////////////////////////////////////////
   // Helper Functions
