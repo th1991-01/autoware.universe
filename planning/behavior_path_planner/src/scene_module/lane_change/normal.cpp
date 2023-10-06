@@ -202,6 +202,8 @@ void NormalLaneChange::insertStopPoint(
   const bool is_in_terminal_section = lanelet::utils::isInLanelet(getEgoPose(), lanelets.back()) ||
                                       distance_to_terminal < lane_change_buffer;
   const double stationary_obj_velocity_threshold = 0.3;
+  std::cerr << "target_objects.target_lane.size():" << target_objects.target_lane.size()
+            << std::endl;
   const bool has_blocking_target_lane_obj = std::any_of(
     target_objects.target_lane.begin(), target_objects.target_lane.end(), [&](const auto & o) {
       if (o.initial_twist.twist.linear.x > stationary_obj_velocity_threshold) {
@@ -209,11 +211,14 @@ void NormalLaneChange::insertStopPoint(
       }
       const double distance_to_target_lane_obj = utils::getSignedDistance(
         path.points.front().point.pose, o.initial_pose.pose, status_.target_lanes);
+      std::cerr << "distance_to_target_lane_obj: " << distance_to_target_lane_obj << std::endl;
       return distance_to_target_lane_obj < distance_to_terminal;
     });
 
   // auto stopping_distance = raw_stopping_distance;
   double stopping_distance = distance_to_terminal - lane_change_buffer - stop_point_buffer;
+  std::cerr << "is_in_terminal_section: " << is_in_terminal_section
+            << ", has_blocking_target_lane_obj: " << has_blocking_target_lane_obj << std::endl;
   if (is_in_terminal_section || !has_blocking_target_lane_obj) {
     // calculate minimum distance from path front to the stationary object on the ego lane.
     const auto distance_to_ego_lane_obj = [&]() -> double {
@@ -228,8 +233,9 @@ void NormalLaneChange::insertStopPoint(
         }
 
         // calculate distance from path front to the stationary object polygon on the ego lane.
-        for (const auto & polygon_p :
-             tier4_autoware_utils::toPolygon2d(object.initial_pose.pose, object.shape).outer()) {
+        const auto polygon =
+          tier4_autoware_utils::toPolygon2d(object.initial_pose.pose, object.shape).outer();
+        for (const auto & polygon_p : polygon) {
           auto p = object.initial_pose.pose;
           p.position =
             tier4_autoware_utils::createPoint(polygon_p.x(), polygon_p.y(), p.position.z);
