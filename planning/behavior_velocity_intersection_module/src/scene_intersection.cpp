@@ -877,8 +877,7 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
     util::getTrafficPrioritizedLevel(assigned_lanelet, planner_data_->traffic_light_id_map);
   const bool is_prioritized =
     traffic_prioritized_level == util::TrafficPrioritizedLevel::FULLY_PRIORITIZED;
-  const auto footprint = planner_data_->vehicle_info_.createFootprint(0.0, 0.0);
-  intersection_lanelets.update(is_prioritized, interpolated_path_info, footprint);
+  intersection_lanelets.update(is_prioritized, interpolated_path_info);
 
   // this is abnormal
   const auto & conflicting_lanelets = intersection_lanelets.conflicting();
