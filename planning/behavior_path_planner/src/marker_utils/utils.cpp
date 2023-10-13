@@ -637,7 +637,10 @@ MarkerArray showSafetyCheckInfo(const CollisionCheckDebugMap & obj_debug_vec, st
        << "\nEgo to obj: " << info.inter_vehicle_distance
        << "\nExtended polygon: " << (info.is_front ? "ego" : "object")
        << "\nExtended polygon lateral offset: " << info.extended_polygon_lat_offset
-       << "\nExtended polygon longitudinal offset: " << info.extended_polygon_lon_offset
+       << "\nExtended polygon forward longitudinal offset: "
+       << info.extended_polygon_forward_lon_offset
+       << "\nExtended polygon backward longitudinal offset: "
+       << info.extended_polygon_backward_lon_offset
        << "\nLast checked position: " << (info.is_front ? "obj in front ego" : "obj at back ego")
        << "\nSafe: " << (info.is_safe ? "Yes" : "No");
 
