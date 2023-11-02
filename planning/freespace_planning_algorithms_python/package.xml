@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>freespace_planning_algorithms_python</name>
+  <version>0.0.0</version>
+  <description>The freespace_planning_algorithms_python package</description>
+  <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>
+  <maintainer email="takumi.ito@tier4.jp">Takumi Ito</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
+
+  <depend>freespace_planning_algorithms</depend>
+  <!-- <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>nlohmann-json-dev</depend>
+  <depend>rosbag2_cpp</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tier4_autoware_utils</depend>
+  <depend>vehicle_info_util</depend> -->
+
+  <test_depend>ament_cmake_ros</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
