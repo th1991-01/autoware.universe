@@ -20,6 +20,7 @@
 #include "behavior_path_planner/scene_module/goal_planner/manager.hpp"
 #include "behavior_path_planner/scene_module/lane_change/interface.hpp"
 #include "behavior_path_planner/scene_module/lane_change/manager.hpp"
+#include "behavior_path_planner/scene_module/sampling_planner/manager.hpp"
 #include "behavior_path_planner/scene_module/side_shift/manager.hpp"
 #include "behavior_path_planner/scene_module/start_planner/manager.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
