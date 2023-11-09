@@ -25,6 +25,36 @@
 #include <utility>
 #include <vector>
 
+#define debug(var)                                                      \
+  do {                                                                  \
+    std::cerr << __func__ << ": " << __LINE__ << ", " << #var << " : "; \
+    view(var);                                                          \
+  } while (0)
+template <typename T>
+void view(T e)
+{
+  std::cerr << e << std::endl;
+}
+template <typename T>
+void view(const std::vector<T> & v)
+{
+  for (const auto & e : v) {
+    std::cerr << e << " ";
+  }
+  std::cerr << std::endl;
+}
+template <typename T>
+void view(const std::vector<std::vector<T>> & vv)
+{
+  for (const auto & v : vv) {
+    view(v);
+  }
+}
+#define line()                                                                         \
+  {                                                                                    \
+    std::cerr << "(" << __FILE__ << ") " << __func__ << ": " << __LINE__ << std::endl; \
+  }
+
 namespace
 {
 // for debug
@@ -146,12 +176,15 @@ bool PathShifter::generate(
   // Calculate shifted path
   switch (type) {
     case SHIFT_TYPE::LINEAR:
+      // line();
       applyLinearShifter(shifted_path);
       break;
     case SHIFT_TYPE::SPLINE:
+      // line();
       applySplineShifter(shifted_path, offset_back);
       break;
     case SHIFT_TYPE::SPLINE_WITH_BOUNDARY_POSE:
+      // line();
       applySplineWithBoundaryPoseShifter(shifted_path, offset_back);
       break;
     default:
@@ -308,7 +341,8 @@ void PathShifter::applySplineWithBoundaryPoseShifter(
       RCLCPP_DEBUG(logger_, "delta shift is zero. skip for this shift point.");
     }
 
-    // const auto reference_arclength = std::max(arclength_arr.at(shift_line.end_idx) - arclength_arr.at(shift_line.start_idx), epsilon);
+    // const auto reference_arclength = std::max(arclength_arr.at(shift_line.end_idx) -
+    // arclength_arr.at(shift_line.start_idx), epsilon);
 
     const auto src_pose = tier4_autoware_utils::calcOffsetPose(
       shifted_path->path.points.at(shift_line.start_idx).point.pose, 0.0, 0.0, 0.0);
@@ -406,7 +440,8 @@ std::pair<std::vector<double>, std::vector<double>> PathShifter::calcBaseLengths
   const auto lat_jerk =
     (2.0 * lateral_acc_limit_ * lateral_acc_limit_ * T) / (lateral_acc_limit_ * T * T - 4.0 * L);
 
-  if (tj < 0.0 || ta < 0.0 || lat_jerk < 0.0 || tj / T < 0.1) {
+  // if (tj < 0.0 || ta < 0.0 || lat_jerk < 0.0 || tj / T < 0.1) {
+  if (tj < 0.0 || ta < 0.0 || lat_jerk < 0.0) {
     // no need to consider acceleration limit
     RCLCPP_WARN_THROTTLE(
       logger_, clock_, 3000,

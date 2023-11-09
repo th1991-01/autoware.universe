@@ -501,7 +501,7 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
    */
   ShiftedPath spline_shift_path = utils::avoidance::toShiftedPath(data.reference_path);
   const auto success_spline_path_generation =
-    path_shifter.generate(&spline_shift_path, true, SHIFT_TYPE::SPLINE_WITH_BOUNDARY_POSE);
+    path_shifter.generate(&spline_shift_path, true, SHIFT_TYPE::SPLINE);
   data.candidate_path = success_spline_path_generation
                           ? spline_shift_path
                           : utils::avoidance::toShiftedPath(data.reference_path);
@@ -2813,9 +2813,12 @@ void AvoidanceModule::updateDebugMarker(
 
   // shift length
   {
-    addShiftLength(debug.pos_shift, "merged_length_pos", 0.0, 0.7, 0.5);
-    addShiftLength(debug.neg_shift, "merged_length_neg", 0.0, 0.5, 0.7);
-    addShiftLength(debug.total_shift, "merged_length_total", 0.99, 0.4, 0.2);
+    // addShiftLength(debug.pos_shift, "merged_length_pos", 0.0, 0.7, 0.5);
+    // addShiftLength(debug.neg_shift, "merged_length_neg", 0.0, 0.5, 0.7);
+    // addShiftLength(debug.total_shift, "merged_length_total", 0.99, 0.4, 0.2);
+    addShiftLength(debug.pos_shift, "merged_length_pos", 0.0, 0.97, 0.05);
+    addShiftLength(debug.neg_shift, "merged_length_neg", 0.0, 0.05, 0.97);
+    addShiftLength(debug.total_shift, "merged_length_total", 0.99, 0.04, 0.02);
   }
 
   // shift grad
@@ -2830,7 +2833,7 @@ void AvoidanceModule::updateDebugMarker(
   {
     add(createEgoStatusMarkerArray(data, getEgoPose(), "ego_status"));
     add(createPathMarkerArray(path, "centerline_resampled", 0, 0.0, 0.9, 0.5));
-    add(createLaneletsAreaMarkerArray(*debug.current_lanelets, "current_lanelet", 0.0, 1.0, 0.0));
+    add(createLaneletsAreaMarkerArray(*debug.current_lanelets, "current_lanelet", 1.0, 1.0, 0.0));
     add(createPolygonMarkerArray(debug.detection_area, "detection_area", 0L, 0.16, 1.0, 0.69, 0.1));
     add(makeOverhangToRoadShoulderMarkerArray(data.target_objects, "overhang"));
     add(createOverhangFurthestLineStringMarkerArray(debug.bounds, "bounds", 1.0, 0.0, 1.0));
