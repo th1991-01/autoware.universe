@@ -954,13 +954,10 @@ double PidLongitudinalController::predictedVelocityInTargetPoint(
 double PidLongitudinalController::applyVelocityFeedback(
   const Motion target_motion, const double dt, const double current_vel, const Shift & shift)
 {
-  // NOTE: Acceleration command is always positive even if the ego drives backward.
   const double vel_sign = (shift == Shift::Forward) ? 1.0 : (shift == Shift::Reverse ? -1.0 : 0.0);
   const double diff_vel = (target_motion.vel - current_vel) * vel_sign;
-  const bool is_under_control = m_current_operation_mode.is_autoware_control_enabled &&
-                                m_current_operation_mode.mode == OperationModeState::AUTONOMOUS;
-  const bool enable_integration =
-    (std::abs(current_vel) > m_current_vel_threshold_pid_integrate) && is_under_control;
+  const bool enable_integration = m_current_operation_mode.is_autoware_control_enabled &&
+                                  m_current_operation_mode.mode == OperationModeState::AUTONOMOUS;
   const double error_vel_filtered = m_lpf_vel_error->filter(diff_vel);
 
   std::vector<double> pid_contributions(3);
