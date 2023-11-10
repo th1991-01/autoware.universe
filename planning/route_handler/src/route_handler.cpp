@@ -578,8 +578,6 @@ lanelet::ConstLanelets RouteHandler::getLaneletSequenceUpTo(
   lanelet::ConstLanelet current_lanelet = lanelet;
   double length = 0;
   while (rclcpp::ok() && length < min_length) {
-    debug(current_lanelet.id());
-    
     lanelet::ConstLanelets candidate_lanelets;
     if (!getPreviousLaneletsWithinRoute(current_lanelet, &candidate_lanelets)) {
       if (only_route_lanes) {

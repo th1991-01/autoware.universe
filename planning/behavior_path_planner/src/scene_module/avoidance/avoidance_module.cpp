@@ -2730,6 +2730,7 @@ void AvoidanceModule::updateDebugMarker(
   }
 
   const auto & path = data.reference_path;
+  const auto & rough_path = data.reference_path_rough;
 
   const auto current_time = rclcpp::Clock{RCL_ROS_TIME}.now();
 
@@ -2816,9 +2817,6 @@ void AvoidanceModule::updateDebugMarker(
     // addShiftLength(debug.pos_shift, "merged_length_pos", 0.0, 0.7, 0.5);
     // addShiftLength(debug.neg_shift, "merged_length_neg", 0.0, 0.5, 0.7);
     // addShiftLength(debug.total_shift, "merged_length_total", 0.99, 0.4, 0.2);
-    addShiftLength(debug.pos_shift, "merged_length_pos", 0.0, 0.97, 0.05);
-    addShiftLength(debug.neg_shift, "merged_length_neg", 0.0, 0.05, 0.97);
-    addShiftLength(debug.total_shift, "merged_length_total", 0.99, 0.04, 0.02);
   }
 
   // shift grad
@@ -2832,7 +2830,8 @@ void AvoidanceModule::updateDebugMarker(
   // misc
   {
     add(createEgoStatusMarkerArray(data, getEgoPose(), "ego_status"));
-    add(createPathMarkerArray(path, "centerline_resampled", 0, 0.0, 0.9, 0.5));
+    add(createPathMarkerArray(path, "centerline_resampled", 0, 0.0, 0.9, 0.1));
+    add(createPathMarkerArray(rough_path, "centerline_raw", 0, 0.9, 0.1, 0.1));
     add(createLaneletsAreaMarkerArray(*debug.current_lanelets, "current_lanelet", 1.0, 1.0, 0.0));
     add(createPolygonMarkerArray(debug.detection_area, "detection_area", 0L, 0.16, 1.0, 0.69, 0.1));
     add(makeOverhangToRoadShoulderMarkerArray(data.target_objects, "overhang"));
