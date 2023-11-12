@@ -27,6 +27,10 @@
 
   <let name="sensor_launch_pkg" value="$(find-pkg-share $(var sensor_model)_launch)"/>
 
+  <!-- External Monitor -->
+  <arg name="launch_external_monitor" default="true" description="launch external monitor"/>
+  <arg name="ecu_name" default="main"/>
+
   <!-- Dummy Diag Publisher -->
   <arg name="launch_rqt_reconfigure" default="false"/>
   <arg name="launch_rqt_runtime_monitor" default="false"/>
@@ -75,6 +79,13 @@
         <arg name="extra_agg_config_file_system" value="$(var diagnostic_aggregator_system_param_path)"/>
         <arg name="extra_agg_config_file_vehicle" value="$(var diagnostic_aggregator_vehicle_param_path)"/>
         <arg name="use_emergency_hold" value="false"/>
+      </include>
+    </group>
+
+    <!-- External Monitor -->
+    <group if="$(var launch_external_monitor)">
+      <include file="$(find-pkg-share external_monitor)/launch/external_monitor.launch.xml">
+        <arg name="ecu_name" value="$(var ecu_name)"/>
       </include>
     </group>
 

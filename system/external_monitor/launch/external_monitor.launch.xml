@@ -1,0 +1,44 @@
+<launch>
+  <!-- "main" or "sub" or "supervisor"-->
+  <arg name="ecu_name" default="main"/>
+
+  <!-- Set 'value' according to the supervisor node's launch file in safety_island -->
+  <group if="$(eval arg('ecu_name') == 'main')">
+    <arg name="input_external_slef_monitoring" value="/sub/self_monitoring/operation_mode_availability"/>
+    <arg name="input_another_external_slef_monitoring" value="/supervisor/self_monitoring/operation_mode_availability"/>
+    <arg name="input_external_module_result" value="/sub/external_module/result"/>
+    <arg name="input_another_external_module_result" value="/supervisor/external_module/result"/>
+    <arg name="output_external_monitoring" value="/main/external_monitoring/operation_mode_availability/sub"/>
+    <arg name="output_another_external_monitoring" value="/main/external_monitoring/operation_mode_availability/supervisor"/>
+  </group>
+
+  <group if="$(eval arg('ecu_name') == 'sub')">
+    <arg name="input_external_slef_monitoring" value="/supervisor/self_monitoring/operation_mode_availability"/>
+    <arg name="input_another_external_slef_monitoring" value="/main/self_monitoring/operation_mode_availability"/>
+    <arg name="input_external_module_result" value="/supervisor/external_module/result"/>
+    <arg name="input_another_external_module_result" value="/main/external_module/result"/>
+    <arg name="output_external_monitoring" value="/sub/external_monitoring/operation_mode_availability/supervisor"/>
+    <arg name="output_another_external_monitoring" value="/sub/external_monitoring/operation_mode_availability/main"/>
+  </group>
+
+  <group if="$(eval arg('ecu_name') == 'supervisor')">
+    <arg name="input_external_slef_monitoring" value="/main/self_monitoring/operation_mode_availability"/>
+    <arg name="input_another_external_slef_monitoring" value="/sub/self_monitoring/operation_mode_availability"/>
+    <arg name="input_external_module_result" value="/main/external_module/result"/>
+    <arg name="input_another_external_module_result" value="/sub/external_module/result"/>
+    <arg name="output_external_monitoring" value="/supervisor/external_monitoring/operation_mode_availability/main"/>
+    <arg name="output_another_external_monitoring" value="/supervisor/external_monitoring/operation_mode_availability/sub"/>
+  </group>
+
+  <node pkg="external_monitor" exec="external_monitor_node" name="external_monitor" output="screen">
+  	<remap from="~/input/external/slef_monitoring" to="$(var input_external_slef_monitoring)"/>
+    <remap from="~/input/another_external/slef_monitoring" to="$(var input_another_external_slef_monitoring)"/>
+
+    <remap from="~/input/external/module_result" to="$(var input_external_module_result)"/>
+    <remap from="~/input/another_external/module_result" to="$(var input_another_external_module_result)"/>
+
+    <remap from="~/output/external_monitoring" to="$(var output_external_monitoring)"/>
+    <remap from="~/output/another_external_monitoring" to="$(var output_another_external_monitoring)"/>
+  </node>
+
+</launch>
