@@ -22,11 +22,11 @@ ExternalMonitor::ExternalMonitor()
   using std::placeholders::_1;
 
   sub_external_self_monitoring_ = create_subscription<OperationModeAvailability>(
-    "~/input/external/slef_monitoring", rclcpp::QoS{1}, std::bind(&ExternalMonitor::onExternalSelfMonitoring, this, _1));
+    "~/input/external/self_monitoring", rclcpp::QoS{1}, std::bind(&ExternalMonitor::onExternalSelfMonitoring, this, _1));
   sub_external_module_result_ = create_subscription<OperationModeAvailability>(
     "~/input/external/module_result", rclcpp::QoS{1}, std::bind(&ExternalMonitor::onExternalModuleResult, this, _1));
   sub_another_external_self_monitoring_ = create_subscription<OperationModeAvailability>(
-    "~/input/another_external/slef_monitoring", rclcpp::QoS{1}, std::bind(&ControlCmdConverter::onAnotherExternalSelfMonitoring, this, _1));
+    "~/input/another_external/self_monitoring", rclcpp::QoS{1}, std::bind(&ExternalMonitor::onExternalSelfMonitoring, this, _1));
   sub_another_external_module_result_ = create_subscription<OperationModeAvailability>(
     "~/input/another_external/module_result", rclcpp::QoS{1}, std::bind(&ExternalMonitor::onAnotherExternalModuleResult, this, _1));
 
@@ -47,12 +47,12 @@ void ExternalMonitor::onAnotherExternalSelfMonitoring(const OperationModeAvailab
 
 // Ideally processes the topic from the external monitoring module.
 // The message type is provisionally set to "OperationModeAvailability" for now.
-void ExternalMonitor::onExternalModuleResult(const OperationModeAvailability::ConstSharedPtr msg) {
+void ExternalMonitor::onExternalModuleResult([[maybe_unused]] const OperationModeAvailability::ConstSharedPtr msg) {
   // Implementation goes here
 }
 
 // Ideally processes the topic from the external monitoring module.
 // The message type is provisionally set to "OperationModeAvailability" for now.
-void ExternalMonitor::onAnotherExternalModuleResult(const OperationModeAvailability::ConstSharedPtr msg) {
+void ExternalMonitor::onAnotherExternalModuleResult([[maybe_unused]] const OperationModeAvailability::ConstSharedPtr msg) {
   // Implementation goes here
 }

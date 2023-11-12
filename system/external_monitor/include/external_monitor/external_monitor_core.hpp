@@ -22,10 +22,10 @@
 
 using tier4_system_msgs::msg::OperationModeAvailability;
 
-class ExtenalMonitor : public rclcpp::Node
+class ExternalMonitor : public rclcpp::Node
 {
 public:
-  explicit ExtenalMonitor();
+  explicit ExternalMonitor();
 
 private:
   // Subscriber
@@ -36,12 +36,12 @@ private:
 
   // Publisher
   rclcpp::Publisher<OperationModeAvailability>::SharedPtr pub_external_monitoring_;
-  rclcpp::Subscription<OperationModeAvailability>::SharedPtr pub_another_external_monitering_;
+  rclcpp::Publisher<OperationModeAvailability>::SharedPtr pub_another_external_monitering_;
 
   void onExternalSelfMonitoring(const OperationModeAvailability::ConstSharedPtr msg);
   void onAnotherExternalSelfMonitoring(const OperationModeAvailability::ConstSharedPtr msg);
   void onExternalModuleResult(const OperationModeAvailability::ConstSharedPtr msg);
-  void onAnotherExternalModuleResult(const OperationModeAvailability::ConstSharedPtr msg)
+  void onAnotherExternalModuleResult(const OperationModeAvailability::ConstSharedPtr msg);
 };
 
 #endif  // EXTERNAL_MONITOR__EXTERNAL_MONITOR_CORE_HPP_
