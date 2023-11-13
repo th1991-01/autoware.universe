@@ -1,8 +1,7 @@
 <launch>
   <!-- "main" or "sub" or "supervisor"-->
-  <arg name="ecu_name" default="main"/>
+  <arg name="ecu_name" default="sub"/>
 
-  <!-- Set 'default' according to the supervisor node's launch file in safety_island -->
   <group if="$(eval '\'$(var ecu_name)\'==\'main\'')">
     <arg name="input_external_self_monitoring" default="/sub/self_monitoring/operation_mode_availability"/>
     <arg name="input_another_external_self_monitoring" default="/supervisor/self_monitoring/operation_mode_availability"/>
@@ -10,6 +9,17 @@
     <arg name="input_another_external_module_result" default="/supervisor/external_module/result"/>
     <arg name="output_external_monitoring" default="/main/external_monitoring/operation_mode_availability/sub"/>
     <arg name="output_another_external_monitoring" default="/main/external_monitoring/operation_mode_availability/supervisor"/>
+
+    <node pkg="external_monitor" exec="external_monitor" name="external_monitor" output="screen">
+  	  <remap from="~/input/external/self_monitoring" to="$(var input_external_self_monitoring)"/>
+      <remap from="~/input/another_external/self_monitoring" to="$(var input_another_external_self_monitoring)"/>
+
+      <remap from="~/input/external/module_result" to="$(var input_external_module_result)"/>
+      <remap from="~/input/another_external/module_result" to="$(var input_another_external_module_result)"/>
+
+      <remap from="~/output/external_monitoring" to="$(var output_external_monitoring)"/>
+      <remap from="~/output/another_external_monitoring" to="$(var output_another_external_monitoring)"/>
+    </node>
   </group>
 
   <group if="$(eval '\'$(var ecu_name)\'==\'sub\'')">
@@ -19,6 +29,17 @@
     <arg name="input_another_external_module_result" default="/main/external_module/result"/>
     <arg name="output_external_monitoring" default="/sub/external_monitoring/operation_mode_availability/supervisor"/>
     <arg name="output_another_external_monitoring" default="/sub/external_monitoring/operation_mode_availability/main"/>
+
+    <node pkg="external_monitor" exec="external_monitor" name="external_monitor" output="screen">
+  	  <remap from="~/input/external/self_monitoring" to="$(var input_external_self_monitoring)"/>
+      <remap from="~/input/another_external/self_monitoring" to="$(var input_another_external_self_monitoring)"/>
+
+      <remap from="~/input/external/module_result" to="$(var input_external_module_result)"/>
+      <remap from="~/input/another_external/module_result" to="$(var input_another_external_module_result)"/>
+
+      <remap from="~/output/external_monitoring" to="$(var output_external_monitoring)"/>
+      <remap from="~/output/another_external_monitoring" to="$(var output_another_external_monitoring)"/>
+    </node>
   </group>
 
   <group if="$(eval '\'$(var ecu_name)\'==\'supervisor\'')">
@@ -28,17 +49,16 @@
     <arg name="input_another_external_module_result" default="/sub/external_module/result"/>
     <arg name="output_external_monitoring" default="/supervisor/external_monitoring/operation_mode_availability/main"/>
     <arg name="output_another_external_monitoring" default="/supervisor/external_monitoring/operation_mode_availability/sub"/>
+
+    <node pkg="external_monitor" exec="external_monitor" name="external_monitor" output="screen">
+  	  <remap from="~/input/external/self_monitoring" to="$(var input_external_self_monitoring)"/>
+      <remap from="~/input/another_external/self_monitoring" to="$(var input_another_external_self_monitoring)"/>
+
+      <remap from="~/input/external/module_result" to="$(var input_external_module_result)"/>
+      <remap from="~/input/another_external/module_result" to="$(var input_another_external_module_result)"/>
+
+      <remap from="~/output/external_monitoring" to="$(var output_external_monitoring)"/>
+      <remap from="~/output/another_external_monitoring" to="$(var output_another_external_monitoring)"/>
+    </node>
   </group>
-
-  <node pkg="external_monitor" exec="external_monitor_node" name="external_monitor" output="screen">
-  	<remap from="~/input/external/self_monitoring" to="$(var input_external_self_monitoring)"/>
-    <remap from="~/input/another_external/self_monitoring" to="$(var input_another_external_self_monitoring)"/>
-
-    <remap from="~/input/external/module_result" to="$(var input_external_module_result)"/>
-    <remap from="~/input/another_external/module_result" to="$(var input_another_external_module_result)"/>
-
-    <remap from="~/output/external_monitoring" to="$(var output_external_monitoring)"/>
-    <remap from="~/output/another_external_monitoring" to="$(var output_another_external_monitoring)"/>
-  </node>
-
 </launch>
