@@ -21,12 +21,20 @@ ExternalMonitor::ExternalMonitor()
 {
   using std::placeholders::_1;
 
+  external_group_ = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  rclcpp::SubscriptionOptions external_options;
+  external_options.callback_group = external_group_;
   sub_external_self_monitoring_ = create_subscription<OperationModeAvailability>(
-    "~/input/external/self_monitoring", rclcpp::QoS{1}, std::bind(&ExternalMonitor::onExternalSelfMonitoring, this, _1));
+    "~/input/external/self_monitoring", rclcpp::QoS{1}, std::bind(&ExternalMonitor::onExternalSelfMonitoring, this, _1), external_options);
   sub_external_module_result_ = create_subscription<OperationModeAvailability>(
     "~/input/external/module_result", rclcpp::QoS{1}, std::bind(&ExternalMonitor::onExternalModuleResult, this, _1));
+  
+  
+  another_external_group_ = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  rclcpp::SubscriptionOptions another_external_options;
+  another_external_options.callback_group = another_external_group_;
   sub_another_external_self_monitoring_ = create_subscription<OperationModeAvailability>(
-    "~/input/another_external/self_monitoring", rclcpp::QoS{1}, std::bind(&ExternalMonitor::onExternalSelfMonitoring, this, _1));
+    "~/input/another_external/self_monitoring", rclcpp::QoS{1}, std::bind(&ExternalMonitor::onExternalSelfMonitoring, this, _1), another_external_options);
   sub_another_external_module_result_ = create_subscription<OperationModeAvailability>(
     "~/input/another_external/module_result", rclcpp::QoS{1}, std::bind(&ExternalMonitor::onAnotherExternalModuleResult, this, _1));
 

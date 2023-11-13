@@ -28,6 +28,9 @@ public:
   explicit ExternalMonitor();
 
 private:
+  //callback group
+  rclcpp::CallbackGroup::SharedPtr external_group_;
+  rclcpp::CallbackGroup::SharedPtr another_external_group_;
   // Subscriber
   rclcpp::Subscription<OperationModeAvailability>::SharedPtr sub_external_self_monitoring_;
   rclcpp::Subscription<OperationModeAvailability>::SharedPtr sub_external_module_result_;
