@@ -34,7 +34,7 @@ ExternalMonitor::ExternalMonitor()
   rclcpp::SubscriptionOptions another_external_options;
   another_external_options.callback_group = another_external_group_;
   sub_another_external_self_monitoring_ = create_subscription<OperationModeAvailability>(
-    "~/input/another_external/self_monitoring", rclcpp::QoS{1}, std::bind(&ExternalMonitor::onExternalSelfMonitoring, this, _1), another_external_options);
+    "~/input/another_external/self_monitoring", rclcpp::QoS{1}, std::bind(&ExternalMonitor::onAnotherExternalSelfMonitoring, this, _1), another_external_options);
   sub_another_external_module_result_ = create_subscription<OperationModeAvailability>(
     "~/input/another_external/module_result", rclcpp::QoS{1}, std::bind(&ExternalMonitor::onAnotherExternalModuleResult, this, _1));
 
