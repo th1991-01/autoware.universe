@@ -1,6 +1,6 @@
-## Crosswalk
+# Crosswalk
 
-### Role
+## Role
 
 This module judges whether the ego should stop in front of the crosswalk in order to provide safe passage of pedestrians and bicycles based on object's behavior and surround traffic.
 
@@ -9,9 +9,56 @@ This module judges whether the ego should stop in front of the crosswalk in orde
   <figcaption>crosswalk module</figcaption>
 </figure>
 
-### Activation Timing
+## Features
 
-The manager launch crosswalk scene modules when the reference path conflicts crosswalk lanelets.
+### Yield Decision
+
+### Dead Lock Prevention
+
+If there are objects stop within a radius of `min_object_velocity * ego_pass_later_margin` meters from virtual collision point, this module judges that ego should stop based on the pass judge logic described above at all times. In such a situation, even if the pedestrian has no intention of crossing, ego continues the stop decision on the spot. So, this module has another logic for dead lock prevention, and if the object continues to stop for more than `timeout_no_intention_to_walk` seconds after ego stops in front of the crosswalk, this module judges that the object has no intention of crossing and switches from **STOP** state to **PASS** state. The parameter `stop_object_velocity_threshold` is used to judge whether the objects are stopped or not. In addition, if the object starts to move after the module judges that the object has no intention of crossing, this module judges whether ego should stop or not once again.
+
+<figure markdown>
+  ![no-intension](docs/no-intension.svg){width=1000}
+  <figcaption>dead lock situation</figcaption>
+</figure>
+
+### Safety Slow Down Behavior
+
+In current autoware implementation if there are no target objects around a crosswalk, ego vehicle
+will not slow down for the crosswalk. However, if ego vehicle to slow down to a certain speed in
+such cases is wanted then it is possible by adding some tags to the related crosswalk definition as
+it is instructed
+in [lanelet2_format_extension.md](https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md)
+document.
+
+| Parameter             |         | Type   | Description                                                                                                           |
+| --------------------- | ------- | ------ | --------------------------------------------------------------------------------------------------------------------- |
+| `slow_velocity`       | [m/s]   | double | target vehicle velocity when module receive slow down command from FOA                                                |
+| `max_slow_down_jerk`  | [m/sss] | double | minimum jerk deceleration for safe brake                                                                              |
+| `max_slow_down_accel` | [m/ss]  | double | minimum accel deceleration for safe brake                                                                             |
+| `no_relax_velocity`   | [m/s]   | double | if the current velocity is less than X m/s, ego always stops at the stop position(not relax deceleration constraints) |
+
+### Stuck Vehicle Detection
+
+The feature will make the ego not to stop on the crosswalk.
+When there are low-speed or stopped vehicle ahead of the crosswalk, and there is not enough space between the crosswalk and the vehicle, the crosswalk module will plan to stop before the crosswalk even if there are no pedestrians or bicycles.
+
+`min_acc`, `min_jerk`, and `max_jerk` are met. If the ego cannot stop before the crosswalk with these parameters, the stop position will move forward.
+
+<figure markdown>
+  ![stuck_vehicle_attention_range](docs/stuck_vehicle_attention_range.svg){width=1000}
+  <figcaption>stuck vehicle attention range</figcaption>
+</figure>
+
+In the `stuck_vehicle` namespace,
+| Parameter | Unit | Type | Description |
+| ----------------------------- |--| ---- | ------------------------------- |
+| `stuck_vehicle_velocity` | [m/s] | double | maximum velocity threshold whether the target vehicle is stopped or not |
+| `max_stuck_vehicle_lateral_offset` | [m] | double | maximum lateral offset of the target vehicle position |
+| `stuck_vehicle_attention_range` | [m] | double | detection area length ahead of the crosswalk |
+| `min_acc` | [m/ss]| double | minimum acceleration to stop |
+| `min_jerk` | [m/sss]| double | minimum jerk to stop |
+| `max_jerk` | [m/sss]| double | maximum jerk to stop |
 
 ### Module Parameters
 
@@ -63,30 +110,6 @@ See the workflow in algorithms section.
 | `stop_position.stop_distance_from_crosswalk` | double | [m] make stop line away from crosswalk when no explicit stop line exists                                                                                                  |
 | `stop_position.far_object_threshold`         | double | [m] if objects cross X meters behind the stop line, the stop position is determined according to the object position (stop_distance_from_object meters before the object) |
 | `stop_position.stop_position_threshold`      | double | [m] threshold for check whether the vehicle stop in front of crosswalk                                                                                                    |
-
-#### Parameters for ego's slow down velocity
-
-| Parameter             | Type   | Description                                                                                                                 |
-| --------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------- |
-| `slow_velocity`       | double | [m/s] target vehicle velocity when module receive slow down command from FOA                                                |
-| `max_slow_down_jerk`  | double | [m/sss] minimum jerk deceleration for safe brake                                                                            |
-| `max_slow_down_accel` | double | [m/ss] minimum accel deceleration for safe brake                                                                            |
-| `no_relax_velocity`   | double | [m/s] if the current velocity is less than X m/s, ego always stops at the stop position(not relax deceleration constraints) |
-
-#### Parameters for stuck vehicle
-
-If there are low speed or stop vehicle ahead of the crosswalk, and there is not enough space between the crosswalk and the vehicle (see following figure), closing the distance to that vehicle could cause Ego to be stuck on the crosswalk. So, in this situation, this module plans to stop before the crosswalk and wait until the vehicles move away, even if there are no pedestrians or bicycles.
-
-<figure markdown>
-  ![stuck_vehicle_attention_range](docs/stuck_vehicle_attention_range.svg){width=1000}
-  <figcaption>stuck vehicle attention range</figcaption>
-</figure>
-
-| Parameter                                        | Type   | Description                                                            |
-| ------------------------------------------------ | ------ | ---------------------------------------------------------------------- |
-| `stuck_vehicle.stuck_vehicle_velocity`           | double | [m/s] maximum velocity threshold whether the vehicle is stuck          |
-| `stuck_vehicle.max_stuck_vehicle_lateral_offset` | double | [m] maximum lateral offset for stuck vehicle position should be looked |
-| `stuck_vehicle.stuck_vehicle_attention_range`    | double | [m] the detection area is defined as X meters behind the crosswalk     |
 
 #### Parameters for pass judge logic
 
@@ -188,24 +211,6 @@ else (no)
 endif
 end
 ```
-
-#### Dead lock prevention
-
-If there are objects stop within a radius of `min_object_velocity * ego_pass_later_margin` meters from virtual collision point, this module judges that ego should stop based on the pass judge logic described above at all times. In such a situation, even if the pedestrian has no intention of crossing, ego continues the stop decision on the spot. So, this module has another logic for dead lock prevention, and if the object continues to stop for more than `timeout_no_intention_to_walk` seconds after ego stops in front of the crosswalk, this module judges that the object has no intention of crossing and switches from **STOP** state to **PASS** state. The parameter `stop_object_velocity_threshold` is used to judge whether the objects are stopped or not. In addition, if the object starts to move after the module judges that the object has no intention of crossing, this module judges whether ego should stop or not once again.
-
-<figure markdown>
-  ![no-intension](docs/no-intension.svg){width=1000}
-  <figcaption>dead lock situation</figcaption>
-</figure>
-
-#### Safety Slow Down Behavior
-
-In current autoware implementation if there are no target objects around a crosswalk, ego vehicle
-will not slow down for the crosswalk. However, if ego vehicle to slow down to a certain speed in
-such cases is wanted then it is possible by adding some tags to the related crosswalk definition as
-it is instructed
-in [lanelet2_format_extension.md](https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md)
-document.
 
 ### Limitations
 
