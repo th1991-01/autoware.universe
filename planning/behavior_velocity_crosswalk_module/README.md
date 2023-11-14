@@ -11,7 +11,57 @@ This module judges whether the ego should stop in front of the crosswalk in orde
 
 ## Features
 
-### Yield Decision
+### Yield
+
+#### Target Object
+
+The target object to be yield is as follows in the `object_filtering.target_object` namespace.
+| Parameter | Unit | Type | Description |
+| --------------------- | ------- | ------ | --------------------------------------------------------------------------------------------------------------------- |
+| `unknown` | [-] | double | target vehicle velocity when module receive slow down command from FOA |
+| `bicycle` | [-] | double | minimum jerk deceleration for safe brake |
+| `motorcycle` | [-] | double | minimum accel deceleration for safe brake |
+| `pedestrian` | [-] | double | if the current velocity is less than X m/s, ego always stops at the stop position(not relax deceleration constraints) |
+
+#### Stop Position
+
+First of all, `stop_distance_from_object` [m] is kept at least between the ego and the target object.
+
+When the stop line exists in the lanelet map, the stop position is calculated based on the line.
+When the stop line does **NOT** exist in the lanelet map, the stop position is calculated by keeping `stop_distance_from_crosswalk` between the ego and the crosswalk.
+
+<figure markdown>
+  ![stop_distance_from_object](docs/stop_margin.svg){width=1000}
+  <figcaption>stop margin</figcaption>
+</figure>
+
+<figure markdown>
+  ![stop_line](docs/stop_line.svg){width=700}
+  <figcaption>explicit stop line</figcaption>
+</figure>
+
+<figure markdown>
+  ![stop_distance_from_crosswalk](docs/stop_line_distance.svg){width=700}
+  <figcaption>virtual stop point</figcaption>
+</figure>
+
+#### Yield decision
+
+On the other hand, if pedestrian (bicycle) is crossing **wide** crosswalks seen in scramble intersections, and the pedestrian position is more than `far_object_threshold` meters away from the stop line, the actual stop position is determined to be `stop_distance_from_object` and pedestrian position, not at the stop line.
+
+<figure markdown>
+  ![far_object_threshold](docs/stop_line_margin.svg){width=1000}
+  <figcaption>stop at wide crosswalk</figcaption>
+</figure>
+
+See the workflow in algorithms section.
+
+| Parameter                                    | Type   | Description                                                                                                                                                               |
+| -------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `stop_position.stop_distance_from_object`    | double | [m] the vehicle decelerates to be able to stop in front of object with margin                                                                                             |
+| `stop_position.stop_distance_from_crosswalk` | double | [m] make stop line away from crosswalk when no explicit stop line exists                                                                                                  |
+| `stop_position.far_object_threshold`         | double | [m] if objects cross X meters behind the stop line, the stop position is determined according to the object position (stop_distance_from_object meters before the object) |
+| `stop_position.stop_position_threshold`      | double | [m] threshold for check whether the vehicle stop in front of crosswalk                                                                                                    |
 
 ### Dead Lock Prevention
 
@@ -73,43 +123,6 @@ In the `stuck_vehicle` namespace,
 | Parameter                            | Type   | Description                                    |
 | ------------------------------------ | ------ | ---------------------------------------------- |
 | `common.traffic_light_state_timeout` | double | [s] timeout threshold for traffic light signal |
-
-#### Parameters for stop position
-
-The crosswalk module determines a stop position at least `stop_distance_from_object` away from the object.
-
-<figure markdown>
-  ![stop_distance_from_object](docs/stop_margin.svg){width=1000}
-  <figcaption>stop margin</figcaption>
-</figure>
-
-The stop line is the reference point for the stopping position of the vehicle, but if there is no stop line in front of the crosswalk, the position `stop_distance_from_crosswalk` meters before the crosswalk is the virtual stop line for the vehicle. Then, if the stop position determined from `stop_distance_from_object` exists in front of the stop line determined from the HDMap or `stop_distance_from_crosswalk`, the actual stop position is determined according to `stop_distance_from_object` in principle, and vice versa.
-
-<figure markdown>
-  ![stop_line](docs/stop_line.svg){width=700}
-  <figcaption>explicit stop line</figcaption>
-</figure>
-
-<figure markdown>
-  ![stop_distance_from_crosswalk](docs/stop_line_distance.svg){width=700}
-  <figcaption>virtual stop point</figcaption>
-</figure>
-
-On the other hand, if pedestrian (bicycle) is crossing **wide** crosswalks seen in scramble intersections, and the pedestrian position is more than `far_object_threshold` meters away from the stop line, the actual stop position is determined to be `stop_distance_from_object` and pedestrian position, not at the stop line.
-
-<figure markdown>
-  ![far_object_threshold](docs/stop_line_margin.svg){width=1000}
-  <figcaption>stop at wide crosswalk</figcaption>
-</figure>
-
-See the workflow in algorithms section.
-
-| Parameter                                    | Type   | Description                                                                                                                                                               |
-| -------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `stop_position.stop_distance_from_object`    | double | [m] the vehicle decelerates to be able to stop in front of object with margin                                                                                             |
-| `stop_position.stop_distance_from_crosswalk` | double | [m] make stop line away from crosswalk when no explicit stop line exists                                                                                                  |
-| `stop_position.far_object_threshold`         | double | [m] if objects cross X meters behind the stop line, the stop position is determined according to the object position (stop_distance_from_object meters before the object) |
-| `stop_position.stop_position_threshold`      | double | [m] threshold for check whether the vehicle stop in front of crosswalk                                                                                                    |
 
 #### Parameters for pass judge logic
 
