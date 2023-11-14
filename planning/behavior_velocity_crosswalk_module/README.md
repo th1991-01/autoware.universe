@@ -104,12 +104,33 @@ Depending on the relative relationship between TTC and TTV, the ego's behavior a
 
 ### Dead Lock Prevention
 
-If there are objects stop within a radius of `min_object_velocity * ego_pass_later_margin` meters from virtual collision point, this module judges that ego should stop based on the pass judge logic described above at all times. In such a situation, even if the pedestrian has no intention of crossing, ego continues the stop decision on the spot. So, this module has another logic for dead lock prevention, and if the object continues to stop for more than `timeout_no_intention_to_walk` seconds after ego stops in front of the crosswalk, this module judges that the object has no intention of crossing and switches from **STOP** state to **PASS** state. The parameter `stop_object_velocity_threshold` is used to judge whether the objects are stopped or not. In addition, if the object starts to move after the module judges that the object has no intention of crossing, this module judges whether ego should stop or not once again.
+When the object is stopped around the crosswalk but has no intention to walk, the ego will yield the object forever.
+To prevent this dead lock, the ego will cancel the yield depending on the situation.
+
+#### When there is no traffic light
+
+For the object is stopped around the crosswalk but has no intention to walk, when the ego keeps stopping to yield for a certain time (\*1), the ego cancels the yield and start driving.
 
 <figure markdown>
   ![no-intension](docs/no-intension.svg){width=1000}
   <figcaption>dead lock situation</figcaption>
 </figure>
+
+\*1:
+The time is calculated based on the distance between the object and crosswalk.
+When `distance_map_for_no_intention_to_walk` is `[1.0, 5.0]` and `timeout_map_for_no_intention_to_walk` is `[3.0, 0.0]`, the time is calculated as follows.
+
+#### When there is traffic light
+
+For the object is stopped around the crosswalk but has no intention to walk, when the ego will cancel the yield without stopping.
+This comes from the assumption that the object has no intention to walk since it is stopped even though the pedestrian traffic light is green.
+
+<figure markdown>
+  ![no-intension](docs/no-intension.svg){width=1000}
+  <figcaption>dead lock situation</figcaption>
+</figure>
+
+#### New Object Handling
 
 ### Safety Slow Down Behavior
 
