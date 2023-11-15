@@ -210,7 +210,11 @@ end
 
 ### Visualization of Time-To-Collision
 
-By `ros2 run behavior_velocity_crosswalk_module time_to_collision_plotter.py`, you can visualize the following figure of the ego and pedestrian's time to collision.
+```sh
+ros2 run behavior_velocity_crosswalk_module time_to_collision_plotter.py
+```
+
+enables you to visualize the following figure of the ego and pedestrian's time to collision.
 The label of each plot is `<crosswalk module id>-<pedestrian uuid>`.
 
 <figure markdown>
