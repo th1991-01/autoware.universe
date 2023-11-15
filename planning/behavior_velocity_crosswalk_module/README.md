@@ -45,25 +45,18 @@ When the stop line exists in the lanelet map, the stop position is calculated ba
 When the stop line does **NOT** exist in the lanelet map, the stop position is calculated by keeping `stop_distance_from_crosswalk` between the ego and the crosswalk.
 
 <figure markdown>
-  ![stop_distance_from_object](docs/stop_margin.svg){width=1000}
+  ![stop_distance_from_object](docs/stop_margin.svg){width=700}
   <figcaption>stop margin</figcaption>
 </figure>
 
 <figure markdown>
-  ![stop_line](docs/stop_line.svg){width=700}
-  <figcaption>explicit stop line</figcaption>
-</figure>
-
-<figure markdown>
-  ![stop_distance_from_crosswalk](docs/stop_line_distance.svg){width=700}
-  <figcaption>virtual stop point</figcaption>
+  ![far_object_threshold](docs/virtual_stop_line.svg){width=700}
 </figure>
 
 On the other hand, if pedestrian (bicycle) is crossing **wide** crosswalks seen in scramble intersections, and the pedestrian position is more than `far_object_threshold` meters away from the stop line, the actual stop position is determined to be `stop_distance_from_object` and pedestrian position, not at the stop line.
 
 <figure markdown>
-  ![far_object_threshold](docs/stop_line_margin.svg){width=1000}
-  <figcaption>stop at wide crosswalk</figcaption>
+  ![far_object_threshold](docs/virtual_stop_line.svg){width=700}
 </figure>
 
 See the workflow in algorithms section.
@@ -228,6 +221,17 @@ The label of each plot is `<crosswalk module id>-<pedestrian uuid>`.
   ![limitation](docs/time_to_collision_plot.png){width=1000}
   <figcaption>Plot of time to collision</figcaption>
 </figure>
+
+## Trouble Shooting
+
+- Q. The ego stopped around the crosswalk even though there were no crosswalk user objects.
+  - A. See [Stuck Vehicle Detection](https://autowarefoundation.github.io/autoware.universe/pr-5583/planning/behavior_velocity_crosswalk_module/#stuck-vehicle-detection).
+- Q. The crosswalk virtual wall suddenly appears resulting in the sudden stop.
+  - A. The crosswalk user objects started moving when the ego was close to the crosswalk.
+- Q. The ego's yield behavior is too conservative.
+  - A. Tune `ego_pass_later_margin` described in [Yield Decision](https://autowarefoundation.github.io/autoware.universe/pr-5583/planning/behavior_velocity_crosswalk_module/#stuck-vehicle-detection)
+- Q. The ego's yield behavior is too aggressive.
+  - A. Tune `ego_pass_later_margin` described in [Yield Decision](https://autowarefoundation.github.io/autoware.universe/pr-5583/planning/behavior_velocity_crosswalk_module/#stuck-vehicle-detection)
 
 ## References/External links
 
