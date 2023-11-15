@@ -27,8 +27,7 @@ The target object's type is filtered by the following parameters in the `object_
 For pedestrians crossing outside the crosswalk, the crosswalk module creates an attention area around the crosswalk. If the object's predicted path collides with the attention area, the object will be targeted for yield.
 
 <figure markdown>
-  ![crosswalk_attention_range](docs/crosswalk_attention_range.svg){width=1000}
-  <figcaption>crosswalk attention range</figcaption>
+  ![crosswalk_attention_range](docs/crosswalk_attention_range.svg){width=800}
 </figure>
 
 In the `object_filtering.target_object` namespace.
@@ -76,11 +75,6 @@ Calculating the collision point, the decision is based on the following variable
 - TTC: Time-To-Collision which is the time for the **ego** to reach the virtual collision point.
 - TTV: Time-To-Vehicle which is the time for the **object** to reach the virtual collision point.
 
-<figure markdown>
-  ![virtual_collision_point](docs/virtual_collision_point.svg){width=1000}
-  <figcaption>virtual collision point</figcaption>
-</figure>
-
 Depending on the relative relationship between TTC and TTV, the ego's behavior at crosswalks can be classified into three categories based on [1]
 
 - A. **TTC >> TTV**: The object has enough time to cross before the ego.
@@ -90,10 +84,14 @@ Depending on the relative relationship between TTC and TTV, the ego's behavior a
 - C. **TTC << TTV**: Ego has enough time to cross before the object.
   - No stop planning.
 
-<figure markdown>
-  ![ttc-ttv](docs/ttc-ttv.svg){width=1000}
-  <figcaption>time-to-collision vs time-to-vehicle</figcaption>
-</figure>
+<div align="center">
+    <table>
+        <tr>
+            <td><img src="./docs/virtual_collision_point.svg" width="600"></td>
+            <td><img src="./docs/ttc_vs_ttv.drawio.svg" width="600"></td>
+        </tr>
+    </table>
+</div>
 
 ### Dead Lock Prevention
 
