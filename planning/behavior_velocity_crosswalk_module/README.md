@@ -27,7 +27,7 @@ The target object's type is filtered by the following parameters in the `object_
 For pedestrians crossing outside the crosswalk, the crosswalk module creates an attention area around the crosswalk. If the object's predicted path collides with the attention area, the object will be targeted for yield.
 
 <figure markdown>
-  ![crosswalk_attention_range](docs/crosswalk_attention_range.svg){width=800}
+  ![crosswalk_attention_range](docs/crosswalk_attention_range.svg){width=500}
 </figure>
 
 In the `object_filtering.target_object` namespace.
@@ -88,7 +88,7 @@ Depending on the relative relationship between TTC and TTV, the ego's behavior a
     <table>
         <tr>
             <td><img src="./docs/virtual_collision_point.svg" width="600"></td>
-            <td><img src="./docs/ttc_vs_ttv.drawio.svg" width="200"></td>
+            <td><img src="./docs/ttc_vs_ttv.drawio.svg" width="350"></td>
         </tr>
     </table>
 </div>
@@ -146,8 +146,7 @@ When there are low-speed or stopped vehicle ahead of the crosswalk, and there is
 `min_acc`, `min_jerk`, and `max_jerk` are met. If the ego cannot stop before the crosswalk with these parameters, the stop position will move forward.
 
 <figure markdown>
-  ![stuck_vehicle_attention_range](docs/stuck_vehicle_attention_range.svg){width=1000}
-  <figcaption>stuck vehicle attention range</figcaption>
+  ![stuck_vehicle_attention_range](docs/stuck_vehicle_detection.svg){width=600}
 </figure>
 
 In the `stuck_vehicle` namespace,
