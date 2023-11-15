@@ -47,8 +47,8 @@ When the stop line does **NOT** exist in the lanelet map, the stop position is c
 <div align="center">
     <table>
         <tr>
-            <td><img src="./docs/explicit_stop_line.svg" width="400"></td>
-            <td><img src="./docs/virtual_stop_line.svg" width="400"></td>
+            <td><img src="./docs/explicit_stop_line.svg" width="600"></td>
+            <td><img src="./docs/virtual_stop_line.svg" width="600"></td>
         </tr>
     </table>
 </div>
