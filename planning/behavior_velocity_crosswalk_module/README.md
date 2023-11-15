@@ -69,7 +69,7 @@ See the workflow in algorithms section.
 
 #### Yield decision
 
-The module make a decision to yield only when the pedestrian traffic ligh is **GREEN** or **UNKNOWN**.
+The module make a decision to yield only when the pedestrian traffic light is **GREEN** or **UNKNOWN**.
 Calculating the collision point, the decision is based on the following variables.
 
 - TTC: Time-To-Collision which is the time for the **ego** to reach the virtual collision point.
@@ -88,7 +88,7 @@ Depending on the relative relationship between TTC and TTV, the ego's behavior a
     <table>
         <tr>
             <td><img src="./docs/virtual_collision_point.svg" width="600"></td>
-            <td><img src="./docs/ttc_vs_ttv.drawio.svg" width="600"></td>
+            <td><img src="./docs/ttc_vs_ttv.drawio.svg" width="200"></td>
         </tr>
     </table>
 </div>
@@ -102,11 +102,6 @@ To prevent this dead lock, the ego will cancel the yield depending on the situat
 
 For the object is stopped around the crosswalk but has no intention to walk, when the ego keeps stopping to yield for a certain time (\*1), the ego cancels the yield and start driving.
 
-<figure markdown>
-  ![no-intension](docs/no-intension.svg){width=1000}
-  <figcaption>dead lock situation</figcaption>
-</figure>
-
 \*1:
 The time is calculated based on the distance between the object and crosswalk.
 When `distance_map_for_no_intention_to_walk` is `[1.0, 5.0]` and `timeout_map_for_no_intention_to_walk` is `[3.0, 0.0]`, the time is calculated as follows.
@@ -116,10 +111,14 @@ When `distance_map_for_no_intention_to_walk` is `[1.0, 5.0]` and `timeout_map_fo
 For the object is stopped around the crosswalk but has no intention to walk, when the ego will cancel the yield without stopping.
 This comes from the assumption that the object has no intention to walk since it is stopped even though the pedestrian traffic light is green.
 
-<figure markdown>
-  ![no-intension](docs/no-intension.svg){width=1000}
-  <figcaption>dead lock situation</figcaption>
-</figure>
+<div align="center">
+    <table>
+        <tr>
+            <td><img src="./docs/without_traffic_light.svg" width="600"></td>
+            <td><img src="./docs/with_traffic_light.svg" width="600"></td>
+        </tr>
+    </table>
+</div>
 
 #### New Object Handling
 
