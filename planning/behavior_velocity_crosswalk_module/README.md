@@ -44,14 +44,14 @@ First of all, `stop_distance_from_object` [m] is kept at least between the ego a
 When the stop line exists in the lanelet map, the stop position is calculated based on the line.
 When the stop line does **NOT** exist in the lanelet map, the stop position is calculated by keeping `stop_distance_from_crosswalk` between the ego and the crosswalk.
 
-<figure markdown>
-  ![stop_distance_from_object](docs/stop_margin.svg){width=700}
-  <figcaption>stop margin</figcaption>
-</figure>
-
-<figure markdown>
-  ![far_object_threshold](docs/virtual_stop_line.svg){width=700}
-</figure>
+<div align="center">
+    <table>
+        <tr>
+            <td><img src="./docs/explicit_stop_line.svg" width="400"></td>
+            <td><img src="./docs/virtual_stop_line.svg" width="400"></td>
+        </tr>
+    </table>
+</div>
 
 On the other hand, if pedestrian (bicycle) is crossing **wide** crosswalks seen in scramble intersections, and the pedestrian position is more than `far_object_threshold` meters away from the stop line, the actual stop position is determined to be `stop_distance_from_object` and pedestrian position, not at the stop line.
 
