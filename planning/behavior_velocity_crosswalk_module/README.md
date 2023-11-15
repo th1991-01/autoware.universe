@@ -79,7 +79,7 @@ Depending on the relative relationship between TTC and TTV, the ego's behavior a
 
 - A. **TTC >> TTV**: The object has enough time to cross before the ego.
   - No stop planning.
-- B. **TTC ≒ TTV**: There is a riskof collision.
+- B. **TTC ≒ TTV**: There is a risk of collision.
   - **Stop point is inserted in the ego's path**.
 - C. **TTC << TTV**: Ego has enough time to cross before the object.
   - No stop planning.
