@@ -68,25 +68,19 @@ def launch_setup(context, *args, **kwargs):
 
     controller_component = ComposableNode(
         package="trajectory_follower_node",
-        plugin="autoware::motion::control::trajectory_follower_node::Controller",
-        name="controller_node_exe",
+        plugin="simple_trajectory_follower::SimpleTrajectoryFollower",
+        name="simple_trajectory_follower_exe",
         namespace="trajectory_follower",
         remappings=[
-            ("~/input/reference_trajectory", "/planning/scenario_planning/trajectory"),
-            ("~/input/current_odometry", "/localization/kinematic_state"),
-            ("~/input/current_steering", "/vehicle/status/steering_status"),
-            ("~/input/current_accel", "/localization/acceleration"),
-            ("~/input/current_operation_mode", "/system/operation_mode/state"),
-            ("~/output/predicted_trajectory", "lateral/predicted_trajectory"),
-            ("~/output/lateral_diagnostic", "lateral/diagnostic"),
-            ("~/output/slope_angle", "longitudinal/slope_angle"),
-            ("~/output/longitudinal_diagnostic", "longitudinal/diagnostic"),
-            ("~/output/control_cmd", "control_cmd"),
+            ("input/trajectory", "/planning/scenario_planning/trajectory"),
+            ("input/kinematics", "/localization/kinematic_state"),
+            ("output/control_cmd", "control_cmd"),
         ],
         parameters=[
             {
-                "lateral_controller_mode": LaunchConfiguration("lateral_controller_mode"),
-                "longitudinal_controller_mode": LaunchConfiguration("longitudinal_controller_mode"),
+                "use_external_target_vel": False,
+                "external_target_vel": 5.0,
+                "lateral_deviation": 0.0
             },
             nearest_search_param,
             trajectory_follower_node_param,
