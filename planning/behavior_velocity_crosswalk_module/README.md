@@ -2,11 +2,10 @@
 
 ## Role
 
-This module judges whether the ego should stop in front of the crosswalk in order to provide safe passage of pedestrians and bicycles based on object's behavior and surround traffic.
+This module judges whether the ego should stop in front of the crosswalk in order to provide safe passage of crosswalk users such as pedestrians and bicycles based on the objects' behavior and surround traffic.
 
 <figure markdown>
-  ![example](docs/example.png){width=1000}
-  <figcaption>crosswalk module</figcaption>
+  ![crosswalk_module](docs/crosswalk_module.svg){width=1000}
 </figure>
 
 ## Features
@@ -17,20 +16,20 @@ This module judges whether the ego should stop in front of the crosswalk in orde
 
 The target object's type is filtered by the following parameters in the `object_filtering.target_object` namespace.
 
-| Parameter    | Unit | Type | Description                                                                                                           |
-| ------------ | ---- | ---- | --------------------------------------------------------------------------------------------------------------------- |
-| `unknown`    | [-]  | bool | target vehicle velocity when module receive slow down command from FOA                                                |
-| `bicycle`    | [-]  | bool | minimum jerk deceleration for safe brake                                                                              |
-| `motorcycle` | [-]  | bool | minimum accel deceleration for safe brake                                                                             |
-| `pedestrian` | [-]  | bool | if the current velocity is less than X m/s, ego always stops at the stop position(not relax deceleration constraints) |
+| Parameter    | Unit | Type | Description                                    |
+| ------------ | ---- | ---- | ---------------------------------------------- |
+| `unknown`    | [-]  | bool | whether to look and stop by UNKNOWN objects    |
+| `pedestrian` | [-]  | bool | whether to look and stop by PEDESTRIAN objects |
+| `bicycle`    | [-]  | bool | whether to look and stop by BICYCLE objects    |
+| `motorcycle` | [-]  | bool | whether to look and stop by MOTORCYCLE objects |
 
-For pedestrians crossing outside the crosswalk, the crosswalk module creates an attention area around the crosswalk. If the object's predicted path collides with the attention area, the object will be targeted for yield.
+In order to detect crosswalk users crossing outside the crosswalk as well, the crosswalk module creates an attention area around the crosswalk shown as the yellow polygon in the figure. If the object's predicted path collides with the attention area, the object will be targeted for yield.
 
 <figure markdown>
-  ![crosswalk_attention_range](docs/crosswalk_attention_range.svg){width=500}
+  ![crosswalk_attention_range](docs/crosswalk_attention_range.svg){width=600}
 </figure>
 
-In the `object_filtering.target_object` namespace.
+The parameter is in the `object_filtering.target_object` namespace.
 
 | Parameter                   | Unit | Type   | Description                                                                                       |
 | --------------------------- | ---- | ------ | ------------------------------------------------------------------------------------------------- |
@@ -38,10 +37,10 @@ In the `object_filtering.target_object` namespace.
 
 #### Stop Position
 
-First of all, `stop_distance_from_object` [m] is kept at least between the ego and the target object.
+First of all, `stop_distance_from_object [m]` is always kept at least between the ego and the target object for safety.
 
 When the stop line exists in the lanelet map, the stop position is calculated based on the line.
-When the stop line does **NOT** exist in the lanelet map, the stop position is calculated by keeping `stop_distance_from_crosswalk` between the ego and the crosswalk.
+When the stop line does **NOT** exist in the lanelet map, the stop position is calculated by keeping `stop_distance_from_crosswalk [m]` between the ego and the crosswalk.
 
 <div align="center">
     <table>
@@ -57,15 +56,6 @@ On the other hand, if pedestrian (bicycle) is crossing **wide** crosswalks seen 
 <figure markdown>
   ![far_object_threshold](docs/virtual_stop_line.svg){width=700}
 </figure>
-
-See the workflow in algorithms section.
-
-| Parameter                                    | Type   | Description                                                                                                                                                               |
-| -------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `stop_position.stop_distance_from_object`    | double | [m] the vehicle decelerates to be able to stop in front of object with margin                                                                                             |
-| `stop_position.stop_distance_from_crosswalk` | double | [m] make stop line away from crosswalk when no explicit stop line exists                                                                                                  |
-| `stop_position.far_object_threshold`         | double | [m] if objects cross X meters behind the stop line, the stop position is determined according to the object position (stop_distance_from_object meters before the object) |
-| `stop_position.stop_position_threshold`      | double | [m] threshold for check whether the vehicle stop in front of crosswalk                                                                                                    |
 
 #### Yield decision
 
@@ -93,7 +83,7 @@ Depending on the relative relationship between TTC and TTV, the ego's behavior a
     </table>
 </div>
 
-### Dead Lock Prevention
+### Smooth Yield Decision
 
 When the object is stopped around the crosswalk but has no intention to walk, the ego will yield the object forever.
 To prevent this dead lock, the ego will cancel the yield depending on the situation.
@@ -203,6 +193,10 @@ end
 | `common.traffic_light_state_timeout` | double | [s] timeout threshold for traffic light signal |
 
 ## Known Issues
+
+- The yield decision may be sometimes aggressive or conservative depending on the case.
+  - The main reason is that the crosswalk module does not know the ego's position in the future. The detailed ego's position will be determined after the whole planning.
+  - Currently the module assumes that the ego will move with a constant velocit.yu
 
 ## Debugging
 
