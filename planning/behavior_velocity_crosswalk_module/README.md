@@ -5,7 +5,7 @@
 This module judges whether the ego should stop in front of the crosswalk in order to provide safe passage of crosswalk users such as pedestrians and bicycles based on the objects' behavior and surround traffic.
 
 <figure markdown>
-  ![crosswalk_module](docs/crosswalk_module.svg){width=1000}
+  ![crosswalk_module](docs/crosswalk_module.svg){width=1100}
 </figure>
 
 ## Features
@@ -202,6 +202,21 @@ end
 
 ### Visualization of debug markers
 
+`/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/crosswalk` shows the following markers.
+
+<figure markdown>
+  ![limitation](docs/debug_markers.png){width=1000}
+</figure>
+
+- Yellow polygons
+  - Ego footprints' polygon to calculate the collision check.
+- Pink polygons
+  - Object footprints' polygon to calculate the collision check.
+- The color of crosswalk
+  - Considering the traffic light's color, red means the target crosswalk and white means the ignored crosswalk.
+- Texts
+  - It shows the module id, TTC, TTV, and the module state.
+
 ### Visualization of Time-To-Collision
 
 ```sh
@@ -213,15 +228,23 @@ The label of each plot is `<crosswalk module id>-<pedestrian uuid>`.
 
 <figure markdown>
   ![limitation](docs/time_to_collision_plot.png){width=1000}
-  <figcaption>Plot of time to collision</figcaption>
 </figure>
 
 ## Trouble Shooting
 
+### Behavior
+
 - Q. The ego stopped around the crosswalk even though there were no crosswalk user objects.
   - A. See [Stuck Vehicle Detection](https://autowarefoundation.github.io/autoware.universe/pr-5583/planning/behavior_velocity_crosswalk_module/#stuck-vehicle-detection).
-- Q. The crosswalk virtual wall suddenly appears resulting in the sudden stop.
-  - A. The crosswalk user objects started moving when the ego was close to the crosswalk.
+- Q. The crosswalk virtual wall suddenly appeared resulting in the sudden stop.
+  - A. There may be a crosswalk user started moving when the ego was close to the crosswalk.
+- Q. The crosswalk module decides to stop even when the pedestrian traffic light is red.
+  - A. The lanelet map may be incorrect. The pedestrian traffic light and the crosswalk have to be related.
+- Q. In the planning simulation, the crosswalk module does the yield decision to stop on all the crosswalks.
+  - A. This is because the pedestrian traffic light is unknown by default. In this case, the crosswalk does the yield decision for safety.
+
+### Parameter Tuning
+
 - Q. The ego's yield behavior is too conservative.
   - A. Tune `ego_pass_later_margin` described in [Yield Decision](https://autowarefoundation.github.io/autoware.universe/pr-5583/planning/behavior_velocity_crosswalk_module/#stuck-vehicle-detection)
 - Q. The ego's yield behavior is too aggressive.
