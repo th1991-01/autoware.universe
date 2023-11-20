@@ -27,6 +27,7 @@ from launch_ros.actions import LoadComposableNodes
 from launch_ros.actions import PushRosNamespace
 from launch_ros.descriptions import ComposableNode
 from launch_ros.substitutions import FindPackageShare
+from launch_ros.actions import Node
 import yaml
 
 
@@ -422,4 +423,16 @@ def generate_launch_description():
             set_container_mt_executable,
         ]
         + [OpaqueFunction(function=launch_setup)]
+        + [
+            Node(
+                package='trajectory_follower_node',
+                executable='pympc_trajectory_follower.py',
+                name='pympc_trajectory_follower',
+                #remappings=[
+                #    ("input/trajectory", "/planning/scenario_planning/trajectory"),
+                #    ("input/kinematics", "/localization/kinematic_state"),
+                #    ("output/control_cmd", "control_cmd"),
+                #],
+            )
+        ]
     )

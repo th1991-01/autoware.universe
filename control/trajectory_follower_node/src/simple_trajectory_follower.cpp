@@ -60,7 +60,7 @@ void SimpleTrajectoryFollower::onTimer()
   cmd.longitudinal.speed = use_external_target_vel_ ? static_cast<float>(external_target_vel_)
                                                     : closest_traj_point_.longitudinal_velocity_mps;
   cmd.longitudinal.acceleration = static_cast<float>(calcAccCmd());
-  pub_cmd_->publish(cmd);
+  // pub_cmd_->publish(cmd);
 }
 
 void SimpleTrajectoryFollower::updateClosest()

@@ -27,6 +27,14 @@ rclcpp_components_register_node(${SIMPLE_TRAJECTORY_FOLLOWER_NODE}
   EXECUTABLE ${SIMPLE_TRAJECTORY_FOLLOWER_NODE}_exe
 )
 
+find_package(ament_cmake_python REQUIRED)
+ament_python_install_package(${PROJECT_NAME})
+
+install(PROGRAMS
+  scripts/pympc_trajectory_follower.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 if(BUILD_TESTING)
   set(TRAJECTORY_FOLLOWER_NODES_TEST test_trajectory_follower_node)
   ament_add_ros_isolated_gtest(${TRAJECTORY_FOLLOWER_NODES_TEST}
