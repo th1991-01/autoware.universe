@@ -24,10 +24,10 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import ComposableNodeContainer
 from launch_ros.actions import LoadComposableNodes
+from launch_ros.actions import Node
 from launch_ros.actions import PushRosNamespace
 from launch_ros.descriptions import ComposableNode
 from launch_ros.substitutions import FindPackageShare
-from launch_ros.actions import Node
 import yaml
 
 
@@ -81,7 +81,7 @@ def launch_setup(context, *args, **kwargs):
             {
                 "use_external_target_vel": False,
                 "external_target_vel": 5.0,
-                "lateral_deviation": 0.0
+                "lateral_deviation": 0.0,
             },
             nearest_search_param,
             trajectory_follower_node_param,
@@ -425,14 +425,14 @@ def generate_launch_description():
         + [OpaqueFunction(function=launch_setup)]
         + [
             Node(
-                package='trajectory_follower_node',
-                executable='pympc_trajectory_follower.py',
-                name='pympc_trajectory_follower',
-                #remappings=[
+                package="trajectory_follower_node",
+                executable="pympc_trajectory_follower.py",
+                name="pympc_trajectory_follower",
+                # remappings=[
                 #    ("input/trajectory", "/planning/scenario_planning/trajectory"),
                 #    ("input/kinematics", "/localization/kinematic_state"),
                 #    ("output/control_cmd", "control_cmd"),
-                #],
+                # ],
             )
         ]
     )
